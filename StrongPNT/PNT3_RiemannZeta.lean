@@ -47,7 +47,9 @@ lemma abs_zeta_prod (s : ℂ) (hs : 1 < s.re) : norm (riemannZeta s) = ∏' p : 
   rw [zetaEulerprod s hs |>.2, abs_P_prod s hs]
 
 -- Lemma abs_of_inv
-lemma abs_of_inv (z : ℂ) (hz : z ≠ 0) : norm (z⁻¹) = (norm z)⁻¹ := norm_inv z
+lemma abs_of_inv (z : ℂ) (hz : z ≠ 0) : norm (z⁻¹) = (norm z)⁻¹ := by
+  have _hz := hz
+  exact norm_inv z
 
 -- Lemma one_minus_p_s_neq_0
 lemma one_minus_p_s_neq_0 (p : ℙ) (s : ℂ) (hs : 1 < s.re) : 1 - ((p : ℕ) : ℂ) ^ (-s : ℂ) ≠ 0 := by
@@ -157,7 +159,7 @@ lemma prod_of_ratios_simplified {P : Type*} (a b : P → ℂ)
     -- Use the fact that ι commutes with tprod again, this time in reverse.
     _ = ∏' p, ι (a' p / b' p) := by simp [tprod_commutes_with_inclusion_infinite, *]
     -- Use the fact that ι commutes with division for each term inside the product.
-    _ = ∏' p, (ι (a' p) / ι (b' p)) := by simp [inclusion_commutes_with_division]
+    _ = ∏' p, (ι (a' p) / ι (b' p)) := by simp
     -- Finally, rewrite the lifts back to the original functions a and b.
     _ = ∏' p, a p / b p := by simp [a', b']
 
@@ -183,7 +185,7 @@ lemma prod_of_ratios {P : Type*} (a b : P → ℂ) (ha : Multipliable a) (hb : M
     simp [lhs_zero, rhs_zero]
   case neg =>
     -- Case 2: For all p, a(p) ≠ 0
-    push_neg at h_a_zero
+    push Not at h_a_zero
     -- Use prod_of_ratios_simplified which is already available in context
     exact prod_of_ratios_simplified a b ha hb h_a_zero h_b_nonzero hA_nonzero' hB_nonzero'
 
@@ -248,7 +250,7 @@ lemma one_add_ne_zero_of_abs_lt_one (z : ℂ) (hz : norm z < 1) : 1 + z ≠ 0 :=
   simpa [sub_eq_add_neg] using one_sub_ne_zero_of_abs_lt_one (-z) hz'
 
 lemma inv_mul_div_cancel_right_of_ne_zero (a b : ℂ) (ha : a ≠ 0) : ((a * b)⁻¹) / a⁻¹ = b⁻¹ := by
-  simp [div_eq_mul_inv, inv_inv, mul_inv_rev, mul_comm, mul_left_comm, mul_assoc, ha]
+  simp [div_eq_mul_inv, inv_inv, mul_inv_rev, mul_comm, ha]
 
 lemma ratio_invs (z : ℂ) (hz : norm z < 1) : (1 - z^2)⁻¹ / (1 - z)⁻¹ = (1 + z)⁻¹ := by
   have hz1 : 1 - z ≠ 0 := one_sub_ne_zero_of_abs_lt_one z hz
@@ -258,6 +260,7 @@ lemma ratio_invs (z : ℂ) (hz : norm z < 1) : (1 - z^2)⁻¹ / (1 - z)⁻¹ = (
 -- Theorem zeta_ratio_identity
 
 lemma complex_cpow_neg_two_mul (z w : ℂ) (hz : z ≠ 0) : z^(-(2*w)) = (z^(-w))^2 := by
+  have _hz := hz
   have h1 : -(2*w) = 2*(-w) := by ring
   rw [h1]
   have h2 : (2 : ℂ)*(-w) = ((2 : ℕ) : ℂ)*(-w) := by norm_cast
@@ -322,9 +325,10 @@ lemma abs_term_bound (p : ℙ) (t : ℝ) :
   -- Apply abs_p_pow_s with s = (3/2 + t*Complex.I) to get |p^{-(3/2+it)}| = p^{-Re(3/2+it)}
   have h2 := abs_p_pow_s p (((3 : ℝ) / 2) + t * Complex.I)
   -- Simplify: Re(3/2 + t*Complex.I) = 3/2
-  have h3 : (((3 : ℝ) / 2) + t * Complex.I).re = ((3 : ℝ) / 2) := by simp [Complex.add_re, Complex.ofReal_re, Complex.mul_I_re]
+  have h3 : (((3 : ℝ) / 2) + t * Complex.I).re = ((3 : ℝ) / 2) := by
+    simp [Complex.add_re, Complex.ofReal_re]
   -- Therefore -Re(3/2 + t*Complex.I) = -3/2
-  have h4 : -(((3 : ℝ) / 2) + t * Complex.I).re = -((3 : ℝ) / 2) := by simp [h3]
+  have h4 : -(((3 : ℝ) / 2) + t * Complex.I).re = -((3 : ℝ) / 2) := by simp
   -- Substitute into h2
   have h5 : norm (((p : ℕ) : ℂ) ^ (-(((3 : ℝ) / 2) + t * Complex.I))) = ((p : ℕ) : ℝ) ^ (-((3 : ℝ) / 2)) := by
     rw [h2, h4]
@@ -347,12 +351,13 @@ lemma condp32 (p : ℙ) (t : ℝ) : 1 - ((p : ℕ) : ℂ) ^ (-(((3 : ℝ) / 2) +
   have hp_eq_one : ((p : ℕ) : ℂ) ^ (-(((3 : ℝ) / 2) + t * Complex.I)) = 1 := eq_of_one_sub_eq_zero _ h
   let s := ((3 : ℝ) / 2) + t * Complex.I
   have hs : 1 < s.re := by
-    simp only [s, Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, Complex.I_im, mul_zero, add_zero]
+    simp only [s, Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re,
+      Complex.I_im, mul_zero]
     norm_num
   have h_abs_lt : norm (((p : ℕ) : ℂ) ^ (-s)) < 1 := p_s_abs_1 p s hs
   have h_s_eq : ((p : ℕ) : ℂ) ^ (-s) = ((p : ℕ) : ℂ) ^ (-(((3 : ℝ) / 2) + t * Complex.I)) := by simp only [s]
   rw [h_s_eq, hp_eq_one] at h_abs_lt
-  have : norm (1 : ℂ) = 1 := by simp [norm, norm_one]
+  have : norm (1 : ℂ) = 1 := by simp [norm]
   rw [this] at h_abs_lt
   exact lt_irrefl 1 h_abs_lt
 
@@ -372,7 +377,10 @@ lemma prod_inequality {P : Type*} (a b : P → ℝ≥0) (ha : Multipliable a) (h
 
 -- Lemma abs_zeta_inequality
 
-lemma multipliable_complex_abs_inv {i : Type*} (g : i → ℂ) (h_mult : Multipliable (fun i => (1 - g i)⁻¹)) (h_nonzero : ∀ i, 1 - g i ≠ 0) : Multipliable (fun i => (norm (1 - g i))⁻¹) := by
+lemma multipliable_complex_abs_inv {i : Type*} (g : i → ℂ)
+    (h_mult : Multipliable (fun i => (1 - g i)⁻¹)) (h_nonzero : ∀ i, 1 - g i ≠ 0) :
+    Multipliable (fun i => (norm (1 - g i))⁻¹) := by
+  have _h_nonzero := h_nonzero
   -- Use the fact that norm z = ‖z‖ for complex numbers
   have h_eq : (fun i => (norm (1 - g i))⁻¹) = (fun i => ‖1 - g i‖⁻¹) := by
     ext i
@@ -428,7 +436,9 @@ lemma multipliable_nnreal_coe {i : Type*} (f : i → NNReal) (hf : Multipliable 
   -- This shows that the coerced function is multipliable
   exact ⟨(a : ℝ), h_coe⟩
 
-lemma nnreal_coe_tprod_eq {i : Type*} (f : i → NNReal) (hf : Multipliable f) : (∏' i : i, f i : ℝ) = ∏' i : i, (f i : ℝ) := by
+lemma nnreal_coe_tprod_eq {i : Type*} (f : i → NNReal) (hf : Multipliable f) :
+    (∏' i : i, f i : ℝ) = ∏' i : i, (f i : ℝ) := by
+  have _hf := hf
   rfl
 
 lemma hasProd_nonneg_of_pos {i : Type*} (f : i → ℝ) (hpos : ∀ i, 0 < f i) (a : ℝ) (ha : HasProd f a) : 0 ≤ a := by
@@ -478,11 +488,11 @@ lemma multipliable_real_to_nnreal {i : Type*} (f : i → ℝ) (hpos : ∀ i, 0 <
   -- Show the coerced function equals the original function
   have h_coe_eq : (fun i => ((⟨f i, le_of_lt (hpos i)⟩ : NNReal) : ℝ)) = f := by
     ext i
-    simp only [NNReal.coe_mk]
+    simp only
   -- The HasProd for the coerced version follows by rewriting
   have ha_coe : HasProd (fun i => ((⟨f i, le_of_lt (hpos i)⟩ : NNReal) : ℝ)) (a_nnreal : ℝ) := by
     rw [h_coe_eq]
-    simp only [a_nnreal, NNReal.coe_mk]
+    simp only [a_nnreal]
     exact ha
   -- Use hasProd_nnreal_of_coe to get HasProd for NNReal
   have ha_nnreal : HasProd (fun i => ⟨f i, le_of_lt (hpos i)⟩) a_nnreal :=
@@ -541,7 +551,7 @@ lemma abs_zeta_inequality (t : ℝ) :
   have h_mult_right : Multipliable (fun p : ℙ => (norm (1 - ((p : ℕ) : ℂ) ^ (-(((3 : ℝ) / 2) + t * Complex.I))))⁻¹) := by
     let s := ((3 : ℝ) / 2) + t * Complex.I
     have hs : 1 < s.re := by
-      simp only [s, Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, mul_zero, add_zero]
+      simp only [s, Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, mul_zero]
       norm_num
     -- Use zetaEulerprod to get multipliability
     have h_euler := (zetaEulerprod s hs).1
@@ -558,7 +568,7 @@ lemma abs_zeta_inequality (t : ℝ) :
   -- Apply pointwise inequality from abs_term_inv_bound
   have h_pointwise : ∀ p : ℙ, f p ≤ g p := by
     intro p
-    simp only [f, g, ← NNReal.coe_le_coe, NNReal.coe_mk]
+    simp only [f, g, ← NNReal.coe_le_coe]
     exact abs_term_inv_bound p t
 
   -- Apply prod_inequality
@@ -643,7 +653,7 @@ theorem zeta_lower_bound (t : ℝ) :
   norm (riemannZeta 3 / riemannZeta ((3 : ℝ) / 2)) ≤
     norm (riemannZeta (((3 : ℝ) / 2) + t * Complex.I)) := by
   have hs : 1 < (((3 : ℝ) / 2 : ℂ) + t * Complex.I).re := by
-    simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_I_re, mul_zero, add_zero]
+    simp only [Complex.add_re, Complex.mul_I_re]
     norm_num
   calc
     norm (riemannZeta 3 / riemannZeta ((3 : ℝ) / 2))
@@ -673,7 +683,7 @@ lemma summable_one_div_nat_add_rpow' {x : ℝ} (hx : 1 < x) : Summable (fun n : 
 
 lemma tsum_pos_of_pos_first_term {f : ℕ → ℝ} (hf : Summable f) (h0 : 0 < f 0) (hnonneg : ∀ n, 0 ≤ f n) : 0 < ∑' n, f n := by
   have hsum0 : ∑ n ∈ Finset.range 1, f n = f 0 := by
-    simp [Finset.sum_range_zero]
+    simp
   have hpos_partial : 0 < ∑ n ∈ Finset.range 1, f n := by
     simpa [hsum0] using h0
   have hsumle : ∑ n ∈ Finset.range 1, f n ≤ ∑' n, f n := by
@@ -756,7 +766,7 @@ lemma zetapos (x : ℝ) (hx : 1 < x) : (riemannZeta x).im = 0 ∧ 0 < (riemannZe
   have hsum : Summable (fun n : ℕ => 1 / ((n + 1 : ℝ) ^ x)) :=
     summable_one_div_nat_add_rpow' (x := x) hx
   have hpos0 : 0 < 1 / ((Nat.cast 0 + 1 : ℝ) ^ x) := by
-    simp [Nat.cast_zero, zero_add]
+    simp [zero_add]
   have hnonneg : ∀ n : ℕ, 0 ≤ 1 / ((n + 1 : ℝ) ^ x) := terms_nonneg x
   have hpos : 0 < ∑' n : ℕ, 1 / ((n + 1 : ℝ) ^ x) :=
     tsum_pos_of_pos_first_term hsum hpos0 hnonneg
@@ -789,7 +799,7 @@ open scoped BigOperators Topology
 
 lemma one_div_nat_cpow_eq_ite_cpow_neg (s : ℂ) (hs : s ≠ 0) (n : ℕ) : 1 / (n : ℂ) ^ s = if n = 0 then 0 else (n : ℂ) ^ (-s) := by
   by_cases h : n = 0
-  · simp [h, Complex.zero_cpow hs, one_div]
+  · simp [h, Complex.zero_cpow hs]
   · have hcalc : 1 / (n : ℂ) ^ s = (n : ℂ) ^ (-s) := by
       calc
         1 / (n : ℂ) ^ s = ((n : ℂ) ^ s)⁻¹ := by simp [one_div]
@@ -876,7 +886,7 @@ lemma sum_Icc0_shifted_eq_sum_range (a : ℕ → ℂ) (m : ℕ) :
           apply Finset.sum_congr rfl
           intro n hn
           have h : n + 1 ≠ 0 := Nat.succ_ne_zero n
-          simp [h]
+          simp
 
 lemma sum_Icc0_shifted_floor_eq (a : ℕ → ℂ) (t : ℝ) :
   (∑ k ∈ Finset.Icc 0 ⌊t⌋₊, (if k = 0 then 0 else a k)) = ∑ n ∈ Finset.range ⌊t⌋₊, a (n + 1) := by
@@ -902,7 +912,7 @@ lemma sum_range_mul_shift_comm (N : ℕ) (a : ℕ → ℂ) (f : ℝ → ℂ) :
   apply Finset.sum_congr rfl
   intro n hn
   have h : n + 1 ≠ 0 := Nat.succ_ne_zero n
-  simp [h, mul_comm]
+  simp [mul_comm]
 
 lemma sum_range_shifted_coeffs (N : ℕ) (a c : ℕ → ℂ) (f : ℝ → ℂ)
   (hshift : ∀ n, c (n + 1) = a (n + 1)) :
@@ -1033,6 +1043,7 @@ lemma lem_sumOfAn (u : ℝ) (hu : 1 ≤ u) :
     (let a := fun _n : ℕ => (1 : ℂ)
      let A := fun u : ℝ => ∑ n ∈ Finset.range (Nat.floor u), a (n + 1)
      A u = (Nat.floor u : ℂ)) := by
+  have _hu := hu
   simp [Finset.sum_const, Finset.card_range]
 
 /-- Lemma: Derivative of `f(u)=u^{-s}`. -/
@@ -1053,6 +1064,7 @@ lemma differentiable_integrable_cpow_on_Icc (s : ℂ) (a b : ℝ) (h0 : 0 < a) (
   (∀ t ∈ Set.Icc a b, DifferentiableAt ℝ (fun u : ℝ => (u : ℂ) ^ (-s)) t)
   ∧ IntegrableOn (deriv (fun u : ℝ => (u : ℂ) ^ (-s))) (Set.Icc a b) :=
 by
+  have _hle := hle
   classical
   -- Define the function and its (candidate) derivative
   set f : ℝ → ℂ := fun u => (u : ℂ) ^ (-s)
@@ -1242,7 +1254,9 @@ lemma lem_applyAbel (s : ℂ) (N : ℕ) (hN : 1 ≤ N) :
   exact hfinal
 
 /-- Lemma: `Nat.floor (N : ℝ) = N` for natural `N`. -/
-lemma lem_floorNisN (N : ℕ) (hN : 1 ≤ N) : Nat.floor (N : ℝ) = N := by simp
+lemma lem_floorNisN (N : ℕ) (hN : 1 ≤ N) : Nat.floor (N : ℝ) = N := by
+  have _hN := hN
+  simp
 
 lemma helper_integral_const_mul (a b : ℝ) (c : ℂ) (g : ℝ → ℂ) : ∫ x in a..b, c * g x = c * ∫ x in a..b, g x := by simp
 
@@ -1262,7 +1276,7 @@ lemma lem_zetaNsimplified1 (s : ℂ) (N : ℕ) (hN : 1 ≤ N) : zetaPartialSum s
   have hInt :
       ∫ u in (1 : ℝ)..N, (Nat.floor u : ℂ) * (-s * (u : ℂ) ^ (-s - 1))
         = (-s) * ∫ u in (1 : ℝ)..N, (Nat.floor u : ℂ) * (u : ℂ) ^ (-s - 1) := by
-    simp [mul_comm, mul_left_comm, mul_assoc]
+    simp [mul_left_comm]
   calc
     zetaPartialSum s N
         = (N : ℂ) * (N : ℂ) ^ (-s)
@@ -1273,7 +1287,7 @@ lemma lem_zetaNsimplified1 (s : ℂ) (N : ℕ) (hN : 1 ≤ N) : zetaPartialSum s
           rw [hInt]
     _ = (N : ℂ) * (N : ℂ) ^ (-s)
           + s * ∫ u in (1 : ℝ)..N, (Nat.floor u : ℂ) * (u : ℂ) ^ (-s - 1) := by
-          simp [sub_eq_add_neg, neg_mul, mul_comm, mul_left_comm, mul_assoc]
+          simp [sub_eq_add_neg, neg_mul]
     _ = (N : ℂ) ^ (1 - s)
           + s * ∫ u in (1 : ℝ)..N, (Nat.floor u : ℂ) * (u : ℂ) ^ (-s - 1) := by
           have hpos : 0 < N := (Nat.succ_le_iff).mp hN
@@ -1297,6 +1311,7 @@ lemma lem_fracPartBound (u : ℝ) : 0 ≤ Int.fract u ∧ Int.fract u < 1 ∧ |I
 /-- Helper: continuity of `u ↦ (u:ℂ)^r` on `Icc a b` when `a>0`. -/
 lemma helper_continuousOn_cpow (r : ℂ) {a b : ℝ} (ha : 0 < a) (hab : a ≤ b) :
     ContinuousOn (fun u : ℝ => (u : ℂ) ^ r) (Set.Icc a b) := by
+  have _hab := hab
   classical
   intro t ht
   have ht_pos : 0 < t := lt_of_lt_of_le ha ht.1
@@ -1425,7 +1440,7 @@ lemma lem_integralSplit (s : ℂ) (N : ℕ) (hN : 1 ≤ N) :
     have hIFC : ((Int.floor u : ℝ) : ℂ) = ((u - Int.fract u : ℝ) : ℂ) :=
       congrArg (fun x : ℝ => (x : ℂ)) hIFR
     have : (Nat.floor u : ℂ) = ((u - Int.fract u : ℝ) : ℂ) := hfloorC.trans hIFC
-    simp [this, Complex.ofReal_sub, sub_eq_add_neg]
+    simp [this, sub_eq_add_neg]
   -- expand and split integrals
   have hcongr2 :
       (∫ u in (1 : ℝ)..N,
@@ -1469,7 +1484,7 @@ lemma lem_integralSplit (s : ℂ) (N : ℕ) (hN : 1 ≤ N) :
         simpa using
           (Complex.cpow_add (x := (u : ℂ)) (y := (1 : ℂ)) (z := (-s - 1)) hcx0).symm
       _ = (u : ℂ) ^ (-s) := by
-        simp [add_comm, add_left_comm, add_assoc, sub_eq_add_neg]
+        simp [add_left_comm, sub_eq_add_neg]
   -- conclude
   calc
     ∫ u in (1 : ℝ)..N, (Nat.floor u : ℂ) * (u : ℂ) ^ (-s - 1)
@@ -1519,7 +1534,7 @@ lemma lem_evalMainIntegral (s : ℂ) (hs : s ≠ 1) (N : ℕ) (hN : 1 ≤ N) : s
         = s * (((N : ℂ) ^ (1 - s) - 1) / (1 - s)) := by
     have : s * (((N : ℂ) ^ ((-s) + 1) - (1 : ℂ) ^ ((-s) + 1)) / ((-s) + 1))
           = s * (((N : ℂ) ^ (1 - s) - (1 : ℂ) ^ (1 - s)) / (1 - s)) := by
-      simp [add_comm, add_left_comm, add_assoc, sub_eq_add_neg]
+      simp [add_comm, sub_eq_add_neg]
     have h1pow : (1 : ℂ) ^ (1 - s) = 1 := by simp
     simpa [h1pow] using this
   have hsplit : s * (((N : ℂ) ^ (1 - s) - 1) / (1 - s))
@@ -1625,7 +1640,7 @@ lemma lem_limitTerm1 (s : ℂ) (hs : 1 < s.re) :
   have hmul_eq : ‖a * b‖ = ‖a‖ * ‖b‖ := by
     simp [a, b]
   -- use |a| ≤ 1 to bound the product
-  have h₁ : ‖a * b‖ ≤ ‖a‖ * ‖b‖ := by simp [hmul_eq]
+  have h₁ : ‖a * b‖ ≤ ‖a‖ * ‖b‖ := by simp
   have h₂ : ‖a‖ * ‖b‖ ≤ 1 * ‖b‖ :=
     mul_le_mul_of_nonneg_right hfract_le1 (norm_nonneg _)
   have h₃ : ‖a * b‖ ≤ 1 * ‖b‖ := le_trans h₁ h₂
@@ -1646,6 +1661,7 @@ lemma lem_limitTerm1 (s : ℂ) (hs : 1 < s.re) :
     _ = u ^ (-s.re - 1) := by simp [hexp]
 
 /-- Lemma: Integrand bound with ε. -/ lemma lem_integrandBoundeps (ε : ℝ) (hε : 0 < ε) (u : ℝ) (hu : 1 ≤ u) (s : ℂ) (hs : ε ≤ s.re) : ‖(Int.fract u : ℝ) * (u : ℂ) ^ (-s - 1)‖ ≤ u ^ (-1 - ε) := by
+  have _hε := hε
   have h1 : ‖(Int.fract u : ℝ) * (u : ℂ) ^ (-s - 1)‖ ≤ u ^ (-s.re - 1) := lem_integrandBound u hu s
   have h2 : -s.re - 1 ≤ -1 - ε := by linarith [hs]
   have h3 : u ^ (-s.re - 1) ≤ u ^ (-1 - ε) := Real.rpow_le_rpow_of_exponent_le hu h2
@@ -1660,6 +1676,7 @@ lemma lem_triangleInequality_add (z₁ z₂ : ℂ) :
 lemma lem_triangleInequality_integral {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {f : ℝ → E} {a b : ℝ} (hf : IntervalIntegrable f volume a b) (h : a ≤ b) :
     ‖∫ u in a..b, f u‖ ≤ ∫ u in a..b, ‖f u‖ := by
+  have _hf := hf
   -- Standard interval integral inequality under the orientation assumption a ≤ b
   simpa using (intervalIntegral.norm_integral_le_integral_norm (μ := volume) (f := f) (a := a) (b := b) h)
 
@@ -1698,7 +1715,7 @@ lemma helper_integral_rpow_eval {ε : ℝ} (hε : 0 < ε) {m n : ℝ}
     simpa using (integral_rpow (a := m) (b := n) (r := -1 - ε) hcond)
   -- simplify the expression to match the desired form
   have h1 : ((-1 - ε) + 1) = -ε := by
-    simp [sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
+    simp [sub_eq_add_neg, add_comm, add_left_comm]
   have : ∫ u in m..n, u ^ (-1 - ε)
       = (n ^ (-ε) - m ^ (-ε)) / (-ε) := by
     simpa [h1]
@@ -1735,7 +1752,7 @@ lemma helper_integral_rpow_le {ε : ℝ} (hε : 0 < ε) {m n : ℝ}
     ∫ u in m..n, u ^ (-1 - ε)
         = (m ^ (-ε) - n ^ (-ε)) / ε := heval
     _ ≤ m ^ (-ε) / ε := hdiv_le
-    _ = (1 / ε) * m ^ (-ε) := by simp [div_eq_mul_inv, one_div, mul_comm]
+    _ = (1 / ε) * m ^ (-ε) := by simp [div_eq_mul_inv, mul_comm]
 
 lemma helper_tendsto_nat_rpow_neg (ε : ℝ) (hε : 0 < ε) :
   Tendsto (fun m : ℕ => (m : ℝ) ^ (-ε)) atTop (𝓝 0) := by
@@ -1820,6 +1837,7 @@ lemma helper_one_le_of_mem_Icc {m n u : ℝ} (hm : 1 ≤ m) (hu : u ∈ Icc m n)
 lemma helper_intervalIntegrable_rpow_neg {ε : ℝ} {a b : ℝ} (hε : 0 < ε)
     (ha : 1 ≤ a) (hab : a ≤ b) :
     IntervalIntegrable (fun u : ℝ => u ^ (-1 - ε)) volume a b := by
+  have _hε := hε
   have h0notIcc : (0 : ℝ) ∉ Set.Icc a b := by
     intro hx
     have : ¬ a ≤ 0 := not_le.mpr (lt_of_lt_of_le zero_lt_one ha)
@@ -1886,6 +1904,7 @@ lemma helper_aebound_kernel_Ioc {ε : ℝ} (hε : 0 < ε) (s : ℂ) (hs : ε ≤
     {m n : ℝ} (hm : 1 ≤ m) (hmn : m ≤ n) :
     ∀ᵐ u ∂(volume.restrict (Ioc m n)),
       ‖((Int.fract u : ℝ) : ℂ) * (u : ℂ) ^ (-s - 1)‖ ≤ u ^ (-1 - ε) := by
+  have _hmn := hmn
   -- Convert the a.e. statement on the restricted measure to a pointwise statement on Ioc m n
   refine
     ((ae_restrict_iff' (μ := volume) (s := Ioc m n)
@@ -1914,6 +1933,8 @@ lemma helper_intervalIntegrable_of_integrableOn_Ioc {f : ℝ → ℂ} {m n : ℝ
 
 lemma helper_rpow_neg_nonneg_on {ε a b : ℝ} (hε : 0 < ε) (ha : 1 ≤ a) (hab : a ≤ b) :
     ∀ u ∈ Icc a b, 0 ≤ u ^ (-1 - ε) := by
+  have _hε := hε
+  have _hab := hab
   intro u hu
   have h1u : 1 ≤ u := le_trans ha hu.1
   have h0u : 0 ≤ u := le_trans (by norm_num) h1u
@@ -2191,6 +2212,7 @@ lemma helper_eventually_eq_from_zetaNfinal (s : ℂ) (hs : s ≠ 1) :
 
 lemma helper_limit_scaled_cpow (s : ℂ) (hs : 1 < s.re) (hsne : s ≠ 1) :
   Tendsto (fun N : ℕ => (N : ℂ) ^ (1 - s) / (1 - s)) atTop (𝓝 0) := by
+  have _hsne := hsne
   have h := lem_limitTerm1 s hs
   have h' := (Filter.Tendsto.const_mul (b := (1 / (1 - s))) h)
   simpa [div_eq_mul_inv, mul_comm] using h'
@@ -2355,15 +2377,18 @@ lemma isOpen_halfplane_re_gt (a : ℝ) : IsOpen {z : ℂ | a < z.re} := by
   simpa [Set.mem_setOf_eq] using
     (isOpen_lt (hf := continuous_const) (hg := Complex.continuous_re))
 
-lemma T_eq_inter_S_half (S T : Set ℂ) (hS : S = {s : ℂ | s ≠ 1}) (hT : T = {s : ℂ | s ∈ S ∧ (1/10 : ℝ) < s.re}) :
+lemma T_eq_inter_S_half (S T : Set ℂ) (hS : S = {s : ℂ | s ≠ 1})
+    (hT : T = {s : ℂ | s ∈ S ∧ (1/10 : ℝ) < s.re}) :
   T = S ∩ {s : ℂ | (1/10 : ℝ) < s.re} := by
+  have _hS := hS
   classical
   ext z
   simp [hT, Set.inter_def]
 
 lemma inter_compl_singleton_eq_diff {α : Type*} [DecidableEq α] (A : Set α) (x : α) :
   A ∩ ({x} : Set α)ᶜ = A \ ({x} : Set α) := by
-  ext z; simp [Set.mem_diff, Set.mem_inter_iff, Set.mem_singleton_iff]
+  ext z
+  simp [Set.mem_inter_iff, Set.mem_singleton_iff]
 
 lemma joinedIn_of_path_forall_mem {s : Set ℂ} {x y : ℂ}
   (γ : Path x y) (hγ : ∀ t, γ t ∈ s) : JoinedIn s x y := by
@@ -2423,7 +2448,7 @@ lemma isPathConnected_punctured_halfplane_re_gt (a : ℝ) (p : ℂ) (hp : a < p.
   have hS4ne : S4.Nonempty := by
     refine ⟨(p.re + 1 : ℝ) + (0 : ℝ) * Complex.I, ?_⟩
     have : p.re < p.re + 1 := by linarith
-    simp [S4, Complex.add_re, Complex.mul_re]
+    simp [S4, Complex.add_re]
   -- Each is path-connected
   have hS1pc : IsPathConnected S1 := (hS1conv.isPathConnected hS1ne)
   have hS2pc : IsPathConnected S2 := (hS2conv.isPathConnected hS2ne)
@@ -2550,7 +2575,8 @@ lemma isPathConnected_punctured_halfplane_re_gt (a : ℝ) (p : ℂ) (hp : a < p.
 
 lemma inter_compl_singleton_eq_diff' {α : Type*} [DecidableEq α] (A : Set α) (x : α) :
   A ∩ ({x} : Set α)ᶜ = A \ ({x} : Set α) := by
-  ext z; simp [Set.mem_diff, Set.mem_inter_iff, Set.mem_singleton_iff]
+  ext z
+  simp [Set.mem_inter_iff, Set.mem_singleton_iff]
 
 /-- Lemma: The set T = {s ∈ S | Re(s) > 1/10} is preconnected. -/
 lemma lem_T_isPreconnected : (let S := {s : ℂ | s ≠ 1}; let T := {s : ℂ | s ∈ S ∧ 1/10 < s.re}; IsPreconnected T) := by
@@ -2665,8 +2691,7 @@ lemma exists_radius_ball_two_step_subset_halfspace (s : ℂ) {ε : ℝ} (hε : �
   have hpos : 0 < s.re - ε := sub_pos.mpr hε
   have hδpos : 0 < δ := by simpa [hδdef] using (half_pos hpos)
   refine ⟨δ, hδpos, ?_⟩
-  intro x hx
-  intro y hy
+  intro x hx y hy
   -- Triangle inequality: dist y s ≤ dist y x + dist x s < δ + δ = s.re - ε
   have htri : dist y s ≤ dist y x + dist x s := by
     simpa using (dist_triangle y x s)
@@ -2692,7 +2717,7 @@ lemma exists_radius_ball_two_step_subset_halfspace (s : ℂ) {ε : ℝ} (hε : �
     exact hpair.left
   have hyge : s.re - ‖y - s‖ ≤ y.re := by
     have h'' : s.re + (y - s).re = y.re := by
-      simp [Complex.sub_re, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
+      simp [sub_eq_add_neg]
     rw [← h'', sub_eq_add_neg]
     gcongr
   -- Combine to get ε < y.re, hence ε ≤ y.re
@@ -2975,7 +3000,7 @@ lemma lem_integralAnalytic (s : ℂ) (hs : 1/10 < s.re) :
         -- identify exp((ε/2) * log u) = u^(ε/2)
         have hexp_rpow : Real.exp ((ε/2) * Real.log u) = u ^ (ε/2) := by
           have : 0 < u := hu0
-          simp [Real.rpow_def_of_pos this, mul_comm, mul_left_comm, mul_assoc]
+          simp [Real.rpow_def_of_pos this, mul_comm]
         -- multiply by u^(-1-ε) ≥ 0 on both sides
         have hmul : Real.log u * u ^ (-1 - ε)
               ≤ ((2/ε) * u ^ (ε/2)) * u ^ (-1 - ε) := by
@@ -2991,16 +3016,16 @@ lemma lem_integralAnalytic (s : ℂ) (hs : 1/10 < s.re) :
           calc
             u ^ (ε/2) * u ^ (-1 - ε)
                 = Real.exp ((ε/2) * Real.log u) * Real.exp ((-1 - ε) * Real.log u) := by
-                    simp [Real.rpow_def_of_pos hu0', mul_comm, mul_left_comm, mul_assoc]
+                    simp [Real.rpow_def_of_pos hu0', mul_comm]
             _ = Real.exp (((ε/2) * Real.log u) + ((-1 - ε) * Real.log u)) := by
                     simpa using h1
             _ = Real.exp (((ε/2) + (-1 - ε)) * Real.log u) := by
                     ring_nf
             _ = u ^ (-1 - (ε/2)) := by
                     have : (ε/2) + (-1 - ε) = -1 - (ε/2) := by ring
-                    simp [this, Real.rpow_def_of_pos hu0', mul_comm, mul_left_comm, mul_assoc]
+                    simp [this, Real.rpow_def_of_pos hu0', mul_comm]
         have hmul' : ((2/ε) * u ^ (ε/2)) * u ^ (-1 - ε) = (2/ε) * u ^ (-1 - (ε/2)) := by
-          simp [mul_comm, mul_left_comm, mul_assoc, hpow_mul]
+          simp [mul_assoc, hpow_mul]
         -- Final bound
         have : ‖F' w u‖ ≤ bound u := by
           refine le_trans hF'le ?_
@@ -3206,7 +3231,7 @@ lemma lem_zetaBound1 (s : ℂ) (hs_re : 1/10 < s.re) (hs_ne : s ≠ 1) : ‖riem
     simp
   have hneg : ‖-s‖ = ‖s‖ := by simp
   have hB : ‖-s * Iint‖ ≤ ‖s‖ * ‖Iint‖ := by
-    have : ‖-s * Iint‖ = ‖s‖ * ‖Iint‖ := by simp [hneg]
+    have : ‖-s * Iint‖ = ‖s‖ * ‖Iint‖ := by simp
     exact this.le
   have h2 : ‖riemannZeta s‖ ≤ (‖(1 : ℂ)‖ + ‖1 / (s - 1)‖) + (‖s‖ * ‖Iint‖) :=
     le_trans h1 (add_le_add hA hB)
@@ -3284,7 +3309,10 @@ lemma lem_zetaBound2 (s : ℂ) (hs_re : 1/10 < s.re) (hs_ne : s ≠ 1) : ‖riem
   simpa [div_eq_mul_inv] using hfinal1
 
 /-- Lemma: Reciprocal norm identity in ℂ. -/
-lemma lem_sOverSminus1Bound (s : ℂ) (hs : s ≠ 1) : ‖(1 / (s - 1))‖ = 1 / ‖s - 1‖ := by simp [one_div]
+lemma lem_sOverSminus1Bound (s : ℂ) (hs : s ≠ 1) :
+    ‖(1 / (s - 1))‖ = 1 / ‖s - 1‖ := by
+  have _hs := hs
+  simp [one_div]
 
 /-- Lemma: Zeta bound 3. -/ lemma lem_zetaBound3 (s : ℂ) (hs_re : 1/10 < s.re) (hs_ne : s ≠ 1) : ‖riemannZeta s‖ ≤ 1 + 1 / ‖s - 1‖ + ‖s‖ / s.re := by
   simpa [lem_sOverSminus1Bound s hs_ne] using lem_zetaBound2 s hs_re hs_ne
@@ -3333,7 +3361,10 @@ lemma lem_invReSbound (s : ℂ) (hs : (1/2 : ℝ) ≤ s.re ∧ s.re < (3 : ℝ))
   exact h_recip
 
 /-- Lemma: Lower bound on `‖s - 1‖` when `1/2 ≤ Re(s) < 3` and `|Im(s)| ≥ 1`. -/
-lemma lem_invSminus1bound (s : ℂ) (hs_re : (1/2 : ℝ) ≤ s.re ∧ s.re < (3 : ℝ)) (hs_im : (1 : ℝ) ≤ |s.im|) : (1 : ℝ) ≤ ‖s - 1‖ := by
+lemma lem_invSminus1bound (s : ℂ)
+    (hs_re : (1/2 : ℝ) ≤ s.re ∧ s.re < (3 : ℝ))
+    (hs_im : (1 : ℝ) ≤ |s.im|) : (1 : ℝ) ≤ ‖s - 1‖ := by
+  have _hs_re := hs_re
   have h2 : |s.im| ≤ ‖s - 1‖ := by
     have : (s - (1 : ℂ)).im = s.im := by
       simp [Complex.sub_im, Complex.one_im]
@@ -3351,7 +3382,9 @@ lemma reciprocal_le_one_of_one_le {x : ℝ} (hx_pos : 0 < x) (hx_ge : 1 ≤ x) :
   rw [one_div_mul_cancel (ne_of_gt hx_pos)] at h1
   exact h1
 
-lemma div_le_mul_of_one_div_le {a c d : ℝ} (ha : 0 ≤ a) (hc : 0 < c) (h : 1 / c ≤ d) : a / c ≤ a * d := by
+lemma div_le_mul_of_one_div_le {a c d : ℝ} (ha : 0 ≤ a) (hc : 0 < c)
+    (h : 1 / c ≤ d) : a / c ≤ a * d := by
+  have _hc := hc
   -- Rewrite a / c as a * (1 / c)
   rw [div_eq_mul_one_div]
   -- Apply mul_le_mul_of_nonneg_left with 1 / c ≤ d and ha : 0 ≤ a
@@ -3459,7 +3492,7 @@ lemma lem_zfroms_conditions (s : ℂ) (t : ℝ)
       rw [abs_of_nonneg nonneg]
       linarith [lower_bound]
     · -- Case: t < 0, so |t| = -t, hence -t > 3, so t < -3
-      push_neg at h
+      push Not at h
       have ht_neg : t < -2 := by
         rw [abs_of_neg h] at ht
         linarith [ht]
@@ -3583,7 +3616,7 @@ lemma D1cinTt_pre (t : ℝ) (ht : |t| > 1) :
     have : (-1/2 - Complex.I * t : ℂ) = (-1/2 : ℂ) - Complex.I * t := by ring
     rw [this]
     rw [complex_im_sub_I_mul]
-    simp [Complex.ofReal_im]
+    simp
 
   -- Use the fact that |z| ≥ |Im(z)|
   have h3 : ‖(-1/2 - Complex.I * t : ℂ)‖ ≥ |(-1/2 - Complex.I * t : ℂ).im| := Complex.abs_im_le_norm _
@@ -3704,6 +3737,7 @@ lemma fc_analytic_normalized (c : ℂ) (f : ℂ → ℂ)
 
 lemma deriv_normalized_nohd (c : ℂ) (f : ℂ → ℂ) (z : ℂ) (h_nonzero : f c ≠ 0) :
   deriv (fun w => f (w + c) / f c) z = (deriv f (z + c)) / f c := by
+  have _h_nonzero := h_nonzero
   rw [deriv_div_const]
   rw [deriv_comp_add_const]
 
@@ -3714,6 +3748,7 @@ lemma fc_log_deriv (c : ℂ) (f : ℂ → ℂ)
     (h_analytic : AnalyticOnNhd ℂ f (closedBall c 1)) (h_nonzero : f c ≠ 0)
     {z : ℂ} (hz_nonzero : f (z + c) ≠ 0) :
     (deriv (fun w => f (w + c) / f c) z) / (f (z + c) / f c) = (deriv f (z + c)) / f (z + c) := by
+  have _h_analytic := h_analytic
   -- Use the lemma deriv_normalized_nohd to compute the derivative
   rw [deriv_normalized_nohd c f z h_nonzero]
   -- Now we have: (deriv f (z + c) / f c) / (f (z + c) / f c) = deriv f (z + c) / f (z + c)
@@ -3721,9 +3756,14 @@ lemma fc_log_deriv (c : ℂ) (f : ℂ → ℂ)
   rw [frac_cancel_const h_nonzero hz_nonzero]
 
 -- Lemma: fc_bound
-lemma fc_bound (B : ℝ) (hB : B > 1) (R : ℝ) (hRpos : 0 < R) (hR : R < 1) (c : ℂ) (f : ℂ → ℂ) (h_nonzero : f c ≠ 0)
+lemma fc_bound (B : ℝ) (hB : B > 1) (R : ℝ) (hRpos : 0 < R) (hR : R < 1)
+    (c : ℂ) (f : ℂ → ℂ) (h_nonzero : f c ≠ 0)
     (h_bound : ∀ z ∈ closedBall c R, ‖f z‖ ≤ B) :
     ∀ z ∈ closedBall (0 : ℂ) R, ‖(fun w => f (w + c) / f c) z‖ ≤ B / ‖f c‖ := by
+  have _hB := hB
+  have _hRpos := hRpos
+  have _hR := hR
+  have _h_nonzero := h_nonzero
   intro z hz
   have hz' : ‖z‖ ≤ R := by
     simpa [mem_closedBall, Complex.dist_eq] using hz
@@ -3732,7 +3772,7 @@ lemma fc_bound (B : ℝ) (hB : B > 1) (R : ℝ) (hRpos : 0 < R) (hR : R < 1) (c 
     simpa [mem_closedBall, Complex.dist_eq] using this
   have hfb : ‖f (z + c)‖ ≤ B := h_bound (z + c) hz_plus
   have hnorm : ‖f (z + c) / f c‖ = ‖f (z + c)‖ / ‖f c‖ := by
-    simp [div_eq_mul_inv, norm_mul, norm_inv]
+    simp [div_eq_mul_inv, norm_inv]
   have : ‖f (z + c)‖ / ‖f c‖ ≤ B / ‖f c‖ :=
     div_le_div_of_nonneg_right hfb (norm_nonneg _)
   simpa [hnorm] using this
@@ -3741,6 +3781,8 @@ lemma fc_bound (B : ℝ) (hB : B > 1) (R : ℝ) (hRpos : 0 < R) (hR : R < 1) (c 
 lemma fc_zeros (r : ℝ) (h : r > 0) (c : ℂ) (f : ℂ → ℂ) (h_nonzero : f c ≠ 0)
   (h_analytic : AnalyticOnNhd ℂ f (closedBall c 1)) :
     (zerosetKfRc r (0 : ℂ) (fun z => f (z + c) / f c)) = (fun ρ => ρ - c) '' (zerosetKfRc r c f) := by
+  have _h := h
+  have _h_analytic := h_analytic
   ext ρ'; constructor
   · intro hmem
     rcases hmem with ⟨hball, hzero⟩
@@ -3955,6 +3997,9 @@ lemma fc_m_order (r : ℝ) (h : r > 0) (c : ℂ) (f : ℂ → ℂ) (h_nonzero : 
     (h_analytic : AnalyticOnNhd ℂ f (closedBall c 1))
     {ρ' : ℂ} (hρ' : ρ' ∈ zerosetKfRc r (0 : ℂ) (fun z => f (z + c) / f c)) :
     analyticOrderAt (fun z => f (z + c) / f c) ρ' = analyticOrderAt f (ρ' + c) := by
+  have _h := h
+  have _h_analytic := h_analytic
+  have _hρ' := hρ'
   classical
   -- Unnormalized translated function
   set g0 : ℂ → ℂ := fun z => f (z + c) with hg0
@@ -3965,7 +4010,8 @@ lemma fc_m_order (r : ℝ) (h : r > 0) (c : ℂ) (f : ℂ → ℂ) (h_nonzero : 
   have hconst_rewrite : analyticOrderAt (fun z => f (z + c) / f c) ρ'
         = analyticOrderAt (fun z => g0 z * (1 / f c)) ρ' := by
     have : (fun z => f (z + c) / f c) = (fun z => g0 z * (1 / f c)) := by
-      funext z; simp [g0, hg0, div_eq_mul_inv, mul_comm]
+      funext z
+      simp [g0, div_eq_mul_inv, mul_comm]
     simp [this]
   -- Prove translation invariance for g0
   have htrans : analyticOrderAt g0 ρ' = analyticOrderAt f (ρ' + c) := by
@@ -4061,6 +4107,9 @@ lemma DminusK (r1 : ℝ) (R1 : ℝ) (hr1 : r1 > 0) (hR1 : R1 > 0) (c : ℂ) (f :
     (h_analytic : AnalyticOnNhd ℂ f (closedBall c 1)) (h_nonzero : f c ≠ 0) :
     ∀ z : ℂ, z ∈ closedBall (0 : ℂ) r1 \ zerosetKfRc R1 (0 : ℂ) (fun w => f (w + c) / f c) ↔
              z + c ∈ closedBall c r1 \ zerosetKfRc R1 c f := by
+  have _hr1 := hr1
+  have _hR1 := hR1
+  have _h_analytic := h_analytic
   intro z
   constructor
   · -- Forward direction: z ∈ D_{r1} \ K_{f_c}(R1) → z+c ∈ D_{r1}(c) \ K_f(R1;c)
@@ -4257,6 +4306,7 @@ lemma log_Deriv_Expansion_Zeta (t : ℝ) (ht : |t| > 2)
     ‖logDerivZeta z - ∑ ρ ∈ hfin.toFinset,
       ((analyticOrderAt riemannZeta ρ).toNat : ℂ) / (z - ρ)‖ ≤ (16 * r^2 / ((r - r1)^3) +
     1 / ((R^2 / R1 - R1) * Real.log (R / R1))) * Real.log (B / ‖riemannZeta c‖) := by
+  have _hr_pos := hr_pos
   intro c B hB h_bound hfin z hzmem
   -- From |t| > 3, deduce |t| > 1
   have ht1 : |t| > 1 := lt_trans (by norm_num : (1 : ℝ) < 2) (by simpa using ht)
@@ -4431,10 +4481,11 @@ lemma zeta_c_norm_pos (t : ℝ) : 0 < ‖riemannZeta (3/2 + Complex.I * t)‖ :=
 
 lemma Zeta1_Zeta_Expand :
     ∃ A > 1, ∃ b > 1,
-    ∀ (t : ℝ) (ht : |t| > 2)
+    ∀ (t : ℝ) (_ht : |t| > 2)
     (r1 r R1 R : ℝ)
-    (hr1_pos : 0 < r1) (hr1_lt_r : r1 < r)
-    (hr_pos : 0 < r) (hr_lt_R1 : r < R1) (hR1_pos : 0 < R1) (hR1_lt_R : R1 < R) (hR_lt_1 : R < 1),
+    (_hr1_pos : 0 < r1) (_hr1_lt_r : r1 < r)
+    (_hr_pos : 0 < r) (_hr_lt_R1 : r < R1) (_hR1_pos : 0 < R1)
+    (_hR1_lt_R : R1 < R) (_hR_lt_1 : R < 1),
     let c := (3/2 : ℂ) + Complex.I * t;
     ∀ (hfin : (zerosetKfRc R1 c riemannZeta).Finite),
     ∀ z ∈ closedBall c r1 \ zerosetKfRc R1 c riemannZeta,
@@ -4448,8 +4499,7 @@ lemma Zeta1_Zeta_Expand :
 
   -- Provide the constants A, b as required
   refine ⟨A, hAgt1, b, hbgt1, ?_⟩
-  intro t ht r1 r R1 R hr1_pos hr1_lt_r hr_pos hr_lt_R1 hR1_pos hR1_lt_R hR_lt_1
-  intro c hfin z hz
+  intro t ht r1 r R1 R hr1_pos hr1_lt_r hr_pos hr_lt_R1 hR1_pos hR1_lt_R hR_lt_1 c hfin z hz
 
   -- Apply log_Deriv_Expansion_Zeta
   have hexp_lemma := log_Deriv_Expansion_Zeta t ht r1 r R1 R hr1_pos hr1_lt_r hr_pos hr_lt_R1 hR1_pos hR1_lt_R hR_lt_1
@@ -4561,9 +4611,9 @@ lemma helper_log_ratio_le_sum (b t x A : ℝ)
     _ = Real.log b + Real.log |t| + A := by
       have hmul : Real.log (b * |t|) = Real.log b + Real.log |t| :=
     Real.log_mul hb_ne ht_ne
-      simp [hmul, add_comm, add_left_comm, add_assoc]
+      simp [hmul, add_comm]
     _ = Real.log |t| + Real.log b + A := by
-          simp [add_comm, add_left_comm, add_assoc]
+          simp [add_comm]
 
 lemma helper_bound_sum_by_Klog (t b A : ℝ)
   (ht : |t| > 3) (hb : b > 1) (hA : A > 1) :
@@ -4611,7 +4661,7 @@ lemma helper_bound_sum_by_Klog (t b A : ℝ)
   calc
     Real.log |t| + Real.log b + A
         = Real.log |t| + S := by
-          simp [S, add_comm, add_left_comm, add_assoc]
+          simp [S, add_comm, add_left_comm]
     _
       ≤ Real.log (|t| + 2) + S := by
       gcongr
@@ -4627,7 +4677,7 @@ lemma Zeta1_Zeta_Expansion
     (r1 r : ℝ)
     (hr1_pos : 0 < r1) (hr1_lt_r : r1 < r) (hr_lt_R1 : r < 5 / (6 : ℝ)) :
     ∃ C > 1,
-    ∀ (t : ℝ) (ht : |t| > 3),
+    ∀ (t : ℝ) (_ht : |t| > 3),
     let c := (3/2 : ℂ) + Complex.I * t;
     ∀ (hfin : (zerosetKfRc (5 / (6 : ℝ)) c riemannZeta).Finite),
     ∀ z ∈ closedBall c r1 \ zerosetKfRc (5 / (6 : ℝ)) c riemannZeta,
@@ -4690,10 +4740,7 @@ lemma Zeta1_Zeta_Expansion
     exact lt_of_lt_of_le this (le_max_right _ _)
   refine ⟨C, hC_gt1, ?_⟩
   -- Now fix t, apply the expansion lemma and chain bounds
-  intro t ht
-  -- Unfold the let-binding c in the goal
-  simp only
-  intro hfin z hz
+  intro t ht c hfin z hz
   -- Apply Zeta1_Zeta_Expand specialized to R1,R
   have ht2 : |t| > 2 := by linarith [ht]
   have hineq0 :=
@@ -4703,7 +4750,7 @@ lemma Zeta1_Zeta_Expansion
   have hK_eq : (16 * r^2 / (r - r1)^3 + 1 / ((R^2 / R1 - R1) * Real.log (R / R1))) = K := by
     simp [K, A0, d, R1, R]
   have hLS_eq : Real.log |t| + Real.log b + A = Real.log |t| + S := by
-    simp [S, add_comm, add_left_comm, add_assoc]
+    simp [S, add_comm, add_assoc]
   have hineq2 : ‖logDerivZeta z - ∑ ρ ∈ hfin.toFinset,
         ((analyticOrderAt riemannZeta ρ).toNat : ℂ) / (z - ρ)‖
         ≤ K * (Real.log |t| + S) := by
@@ -4726,7 +4773,7 @@ lemma Zeta1_Zeta_Expansion
     -- Since log 3 ≤ log |t| and S/log 3 ≥ 0, we have (S/log 3) * log 3 ≤ (S/log 3) * log |t|
     -- But (S/log 3) * log 3 = S, so S ≤ (S/log 3) * log |t|
     calc S
-      = (S / Real.log 3) * Real.log 3 := by simp [div_mul_cancel, hneq]
+      = (S / Real.log 3) * Real.log 3 := by simp [hneq]
       _ ≤ (S / Real.log 3) * Real.log |t| := mul_le_mul_of_nonneg_left hL_ge_log3' hratio_nonneg
 
   have hsum_bound : Real.log |t| + S ≤ (1 + S / Real.log 3) * Real.log |t| := by

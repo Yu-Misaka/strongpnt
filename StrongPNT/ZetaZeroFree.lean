@@ -45,7 +45,7 @@ lemma ZetaCont' : ContinuousOn ζ (univ \ {1}) := by
   apply continuousOn_of_forall_continuousAt (fun x hx ↦ ?_)
   apply DifferentiableAt.continuousAt (𝕜 := ℂ)
   convert differentiableAt_riemannZeta ?_
-  simp only [mem_diff, mem_univ, mem_singleton_iff, true_and] at hx
+  simp only [Set.mem_sdiff, mem_univ, mem_singleton_iff, true_and] at hx
   exact hx
 
 /-%%
@@ -65,7 +65,7 @@ lemma ZetaNoZerosInBox' (T : ℝ) :
     ∃ (σ : ℝ) (_ : σ < 1), ∀ (t : ℝ) (_ : |t| ≤ T)
     (σ' : ℝ) (_ : σ' ≥ σ), ζ (σ' + t * I) ≠ 0 := by
   by_contra h
-  push_neg at h
+  push Not at h
 
   have hn (n : ℕ) := h (σ := 1 - 1 / (n + 1)) (sub_lt_self _ (by positivity))
 
@@ -76,7 +76,7 @@ lemma ZetaNoZerosInBox' (T : ℝ) :
     refine ⟨t, σ', ?_, hσ', ht, hζ⟩
     intro n
     by_contra hσn
-    push_neg at hσn
+    push Not at hσn
     have := riemannZeta_ne_zero_of_one_lt_re (s := σ' n + t n * I)
     simp only [add_re, ofReal_re, mul_re, I_re, mul_zero, ofReal_im, I_im, mul_one, sub_self,
       add_zero, ne_eq] at this
@@ -200,10 +200,10 @@ theorem LogDerivZetaHolcSmallT' :
   let U := ([[σ₂, 2]] ×ℂ [[-3, 3]]) \ {1}
   have s_in_U_im_le3 : ∀ s ∈ U, |s.im| ≤ 3 := by
     intro s hs
-    rw [mem_diff_singleton] at hs
+    rw [mem_sdiff_singleton] at hs
     rcases hs with ⟨hbox, _hne⟩
     rcases hbox with ⟨hre, him⟩
-    simp only [Set.mem_preimage, mem_Icc] at him
+    simp only [Set.mem_preimage] at him
     obtain ⟨him_lower, him_upper⟩ := him
     apply abs_le.2
     simp at him_lower
@@ -214,10 +214,10 @@ theorem LogDerivZetaHolcSmallT' :
 
   have s_in_U_re_ges2 : ∀ s ∈ U, σ₂ ≤ s.re := by
     intro s hs
-    rw [mem_diff_singleton] at hs
+    rw [mem_sdiff_singleton] at hs
     rcases hs with ⟨hbox, _hne⟩
     rcases hbox with ⟨hre, _him⟩
-    simp only [Set.mem_preimage, mem_Icc] at hre
+    simp only [Set.mem_preimage] at hre
     obtain ⟨hre_lower, hre_upper⟩ := hre
     have : min σ₂ 2 = σ₂ := by
       apply min_eq_left
@@ -226,7 +226,7 @@ theorem LogDerivZetaHolcSmallT' :
     exact hre_lower
 
   apply LogDerivZetaHoloOn
-  · exact notMem_diff_of_mem rfl
+  · exact notMem_sdiff_of_mem rfl
   · intro s hs
     rw[← re_add_im s]
     apply hζ_ne_zero
@@ -263,7 +263,7 @@ theorem LogDerivZetaHolcLargeT' :
     · exact le_trans (min_le_left _ _) A_inter.2
   intro T hT
   apply LogDerivZetaHoloOn
-  · exact notMem_diff_of_mem rfl
+  · exact notMem_sdiff_of_mem rfl
   intro s hs
   rcases le_or_gt 1 s.re with one_le|lt_one
   · exact riemannZeta_ne_zero_of_one_le_re one_le

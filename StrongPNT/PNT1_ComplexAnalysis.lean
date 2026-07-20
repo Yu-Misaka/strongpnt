@@ -245,7 +245,7 @@ lemma lem_nonnegative_product5 (M : ℝ) (w : ℂ) (hM : M > 0) (hw_re_le_M : w.
 
 lemma lem_nonnegative_product6 (M : ℝ) (w : ℂ) (hM : M > 0) (hw_re_le_M : w.re ≤ M) : norm w ≤ norm (2 * M - w) := by apply lem_nonnegative_product5 M w hM hw_re_le_M
 
-lemma lem_ineqmultr (a b c : ℝ) (hc : c > 0) (ha : 0 ≤ a) (hab : a ≤ b) : a / c ≤ b / c := by
+lemma lem_ineqmultr (a b c : ℝ) (hc : c > 0) (_ha : 0 ≤ a) (hab : a ≤ b) : a / c ≤ b / c := by
   apply div_le_div_of_nonneg_right
   exact hab
   linarith [hc]
@@ -255,7 +255,7 @@ lemma lem_ineqmultrbb (a b : ℝ) (hb : b > 0) (ha : 0 ≤ a) (hab : a ≤ b) : 
   rw [div_self (ne_of_gt hb)] at h
   exact h
 
-lemma lem_nonnegative_product7 (M : ℝ) (w : ℂ) (hM : M > 0) (h_abs_diff_pos : norm (2 * M - w) > 0) (h_abs_le_abs_diff : norm w ≤ norm (2 * M - w)) : norm w / norm (2 * M - w) ≤ 1 := by
+lemma lem_nonnegative_product7 (M : ℝ) (w : ℂ) (_hM : M > 0) (h_abs_diff_pos : norm (2 * M - w) > 0) (h_abs_le_abs_diff : norm w ≤ norm (2 * M - w)) : norm w / norm (2 * M - w) ≤ 1 := by
   -- We need to show 0 <= ‖w‖. This is true by definition of absolute value (norm).
   have h_abs_w_nonneg : 0 ≤ ‖w‖ := norm_nonneg w
   -- We are given h_abs_le_abs_diff: ‖w‖ <= ‖2 * M - w‖
@@ -299,7 +299,7 @@ lemma rtriangle2 (r : ℝ) (N F : ℂ) (hr : r > 0) : r * norm (N - F) ≤ r * n
   have h := lem_rtriangle r N F hr
   linarith [h]
 
-lemma lem_rtriangle3 (r R : ℝ) (N F : ℂ) (hr : r > 0) (hR : r < R) (h : R * norm F ≤ r * norm (N - F)) : R * norm F ≤ r * norm N + r * norm F := by
+lemma lem_rtriangle3 (r R : ℝ) (N F : ℂ) (hr : r > 0) (_hR : r < R) (h : R * norm F ≤ r * norm (N - F)) : R * norm F ≤ r * norm N + r * norm F := by
   calc
     R * norm F ≤ r * norm (N - F) := by exact h
     _ ≤ r * norm N + r * norm F := by apply rtriangle2 r N F hr
@@ -343,12 +343,12 @@ lemma lem_rtriangle5 (r R M : ℝ) (F : ℂ) (hr : 0 < r) (hrR : r < R) (hM : M 
   rw [mul_comm r (2 * M)] at h1
   exact h1
 
-lemma lem_RrFpos (r R : ℝ) (F : ℂ) (hr : 0 < r) (hrR : r < R) : (R - r) * norm F ≥ 0 := by
+lemma lem_RrFpos (r R : ℝ) (F : ℂ) (_hr : 0 < r) (hrR : r < R) : (R - r) * norm F ≥ 0 := by
   have h_R_minus_r_nonneg : R - r ≥ 0 := by linarith [hrR]
   have h_abs_F_nonneg : 0 ≤ norm F := by apply norm_nonneg
   apply mul_nonneg h_R_minus_r_nonneg h_abs_F_nonneg
 
-lemma lem_rtriangle6 (r R M : ℝ) (F : ℂ) (hr : 0 < r) (hrR : r < R) (hM : M > 0)
+lemma lem_rtriangle6 (r R M : ℝ) (F : ℂ) (hr : 0 < r) (hrR : r < R) (_hM : M > 0)
     (h_hyp : (R - r) * norm F ≤ 2 * M * r) :
 norm F ≤ (2 * M * r) / (R - r) := by
   have h_R_minus_r_pos : R - r > 0 := by linarith [hrR]
@@ -377,34 +377,34 @@ def ballDR (R : ℝ) : Set ℂ := Metric.ball (0 : ℂ) R
 lemma analyticAt_to_analyticWithinAt {f : ℂ → ℂ} {S : Set ℂ} {z : ℂ} (hf : AnalyticAt ℂ f z) : AnalyticWithinAt ℂ f S z := by
   exact hf.analyticWithinAt
 
-theorem analyticWithinAt_to_analyticAt_aux {f : ℂ → ℂ} {S : Set ℂ} {z : ℂ} (hS : S ∈ nhds z)
-  (p : FormalMultilinearSeries ℂ ℂ ℂ) (r : ENNReal) (h_conv_on_inter : r ≤ p.radius) (hr_pos : 0 < r)
-  (hasSumt : ∀ {y : ℂ}, z + y ∈ insert z S → y ∈ EMetric.ball 0 r → HasSum (fun n => (p n) fun x => y) (f (z + y)))
+theorem analyticWithinAt_to_analyticAt_aux {f : ℂ → ℂ} {S : Set ℂ} {z : ℂ} (_hS : S ∈ nhds z)
+  (p : FormalMultilinearSeries ℂ ℂ ℂ) (r : ENNReal) (_h_conv_on_inter : r ≤ p.radius) (_hr_pos : 0 < r)
+  (hasSumt : ∀ {y : ℂ}, z + y ∈ insert z S → y ∈ Metric.eball 0 r → HasSum (fun n => (p n) fun _x => y) (f (z + y)))
   (ε : ℝ) (hε_pos : ε > 0) (h_ball_subset_S : Metric.ball z ε ⊆ S) :
   let r' := min r (ENNReal.ofReal ε);
-  ∀ {y : ℂ}, y ∈ EMetric.ball 0 r' → HasSum (fun n => (p n) fun x => y) (f (z + y)) := by
+  ∀ {y : ℂ}, y ∈ Metric.eball 0 r' → HasSum (fun n => (p n) fun _x => y) (f (z + y)) := by
   intro r' y hy
   apply hasSumt
   · -- Prove z + y ∈ insert z S
-    -- Since y ∈ EMetric.ball 0 r', we have ‖y‖ < r'
+    -- Since y ∈ Metric.eball 0 r', we have ‖y‖ < r'
     -- Since r' ≤ ENNReal.ofReal ε, we have ‖y‖ < ε
     -- Therefore z + y ∈ Metric.ball z ε ⊆ S
     right  -- Choose to prove z + y ∈ S (not z + y = z)
     apply h_ball_subset_S
     rw [Metric.mem_ball]
     -- Need to show dist z (z + y) < ε
-    simp [dist_self_add_right]
+    simp
     -- Now need to show ‖y‖ < ε
-    have : y ∈ EMetric.ball 0 (ENNReal.ofReal ε) := by
-      apply EMetric.ball_subset_ball (min_le_right r (ENNReal.ofReal ε)) hy
+    have : y ∈ Metric.eball 0 (ENNReal.ofReal ε) := by
+      apply Metric.eball_subset_eball (min_le_right r (ENNReal.ofReal ε)) hy
 
     have h_edist : ENNReal.ofReal (dist y 0) < ENNReal.ofReal ε := by
-      simpa [Metric.mem_eball, edist_dist] using (EMetric.mem_ball.mp this)
+      simpa [Metric.mem_eball, edist_dist] using (Metric.mem_eball.mp this)
     have hdist : dist y 0 < ε := (ENNReal.ofReal_lt_ofReal_iff hε_pos).mp h_edist
     simpa [dist_zero_right] using hdist
 
-  · -- Prove y ∈ EMetric.ball 0 r
-    exact EMetric.ball_subset_ball (min_le_left r (ENNReal.ofReal ε)) hy
+  · -- Prove y ∈ Metric.eball 0 r
+    exact Metric.eball_subset_eball (min_le_left r (ENNReal.ofReal ε)) hy
 
 
 theorem analyticWithinAt_to_analyticAt {f : ℂ → ℂ} {S : Set ℂ} {z : ℂ}
@@ -417,10 +417,10 @@ theorem analyticWithinAt_to_analyticAt {f : ℂ → ℂ} {S : Set ℂ} {z : ℂ}
 
   -- Now the goal is to show `HasFPowerSeriesAt f p z`.
   -- By definition, this means there exists a radius `r' > 0` such that `p`
-  -- converges to `f` on the open ball `EMetric.ball z r'`.
+  -- converges to `f` on the open ball `Metric.eball z r'`.
 
   -- From `hp : HasFPowerSeriesWithinAt f p S z`, we get a radius `r > 0`
-  -- where `p` converges to `f` on the *intersection* `EMetric.ball z r ∩ S`.
+  -- where `p` converges to `f` on the *intersection* `Metric.eball z r ∩ S`.
   rcases hp with ⟨r, h_conv_on_inter, hr_pos⟩
 
   -- From `hS : S ∈ nhds z`, we know `S` contains an open ball around `z`.
@@ -441,7 +441,7 @@ theorem analyticWithinAt_to_analyticAt {f : ℂ → ℂ} {S : Set ℂ} {z : ℂ}
   -- The minimum of two positive numbers is positive.
   · exact inf_le_of_left_le h_conv_on_inter
 
-  -- Goal 2: Prove convergence on the ball `EMetric.ball z r'`.
+  -- Goal 2: Prove convergence on the ball `Metric.eball z r'`.
   -- We know from `h_conv_on_inter` that `p` converges on a larger set.
   -- We can use `HasFPowerSeriesOnBall.mono` to restrict the convergence to a smaller set.
   ·
@@ -452,7 +452,7 @@ theorem analyticWithinAt_to_analyticAt {f : ℂ → ℂ} {S : Set ℂ} {z : ℂ}
 
 -- First, the easy auxiliary lemmas:
 
-lemma lem_not0mono (R : ℝ) (hR_pos : 0 < R) (hR_lt_one : R < 1) :
+lemma lem_not0mono (R : ℝ) (_hR_pos : 0 < R) (_hR_lt_one : R < 1) :
     {z : ℂ | norm z ≤ R ∧ z ≠ 0} ⊆ {z : ℂ | z ≠ 0} := by
   intro z hz
   exact hz.2
@@ -461,7 +461,7 @@ lemma lem_analmono {T S : Set ℂ} {f : ℂ → ℂ} (hS : AnalyticOn ℂ f S) (
     AnalyticOn ℂ f T := by
   exact hS.mono hT
 
-lemma lem_1zanalDR (R : ℝ) (hR_pos : 0 < R) :
+lemma lem_1zanalDR (R : ℝ) (_hR_pos : 0 < R) :
     AnalyticOn ℂ (fun z ↦ z⁻¹) {z : ℂ | norm z ≤ R ∧ z ≠ 0} := by
   -- The function z⁻¹ is analytic on ℂ \ {0}.
   -- We just need to show that our set is a subset of ℂ \ {0}.
@@ -526,7 +526,7 @@ lemma lem_AnalOntoWithin {V : Set ℂ} {h : ℂ → ℂ} (hh : AnalyticOn ℂ h 
     AnalyticWithinAt ℂ h V z := by
   exact hh z hz
 
-lemma lem_AnalWithintoOn {R : ℝ} (hR : 0 < R) (h : ℂ → ℂ) :
+lemma lem_AnalWithintoOn {R : ℝ} (_hR : 0 < R) (h : ℂ → ℂ) :
     (∀ z ∈ Metric.closedBall 0 R, AnalyticWithinAt ℂ h (Metric.closedBall 0 R) z) →
     AnalyticOn ℂ h (Metric.closedBall 0 R) := by
   exact fun h => h
@@ -561,7 +561,7 @@ lemma lem_AnalAttoWithin {h : ℂ → ℂ} {s : Set ℂ} (hh : AnalyticAt ℂ h 
     AnalyticWithinAt ℂ h s 0 := by
   exact hh.analyticWithinAt
 
-lemma analyticWithinAt_punctured_to_closedBall {R : ℝ} (hR : 0 < R) {h : ℂ → ℂ} {z : ℂ} (hz : z ∈ {w : ℂ | norm w ≤ R ∧ w ≠ 0}) (h_within : AnalyticWithinAt ℂ h {w : ℂ | norm w ≤ R ∧ w ≠ 0} z) : AnalyticWithinAt ℂ h (Metric.closedBall 0 R) z := by
+lemma analyticWithinAt_punctured_to_closedBall {R : ℝ} (_hR : 0 < R) {h : ℂ → ℂ} {z : ℂ} (hz : z ∈ {w : ℂ | norm w ≤ R ∧ w ≠ 0}) (h_within : AnalyticWithinAt ℂ h {w : ℂ | norm w ≤ R ∧ w ≠ 0} z) : AnalyticWithinAt ℂ h (Metric.closedBall 0 R) z := by
   -- Apply mono_of_mem_nhdsWithin: we need to show the punctured disk is a neighborhood of z within the closed ball
   apply AnalyticWithinAt.mono_of_mem_nhdsWithin h_within
 
@@ -590,7 +590,7 @@ lemma analyticWithinAt_punctured_to_closedBall {R : ℝ} (hR : 0 < R) {h : ℂ �
       intro hw_eq_zero
       have w_in_ball : w ∈ Metric.ball z (‖z‖ / 2) := hw.1
       rw [hw_eq_zero] at w_in_ball
-      simp only [Metric.mem_ball, dist_zero_right] at w_in_ball
+      simp only [Metric.mem_ball] at w_in_ball
       -- We have ‖z‖ < ‖z‖ / 2, which is impossible
       -- But wait, dist 0 z = ‖z - 0‖ = ‖z‖, so we have ‖z‖ < ‖z‖ / 2
       rw [dist_comm] at w_in_ball
@@ -622,7 +622,7 @@ lemma lem_analAtOnOn {R : ℝ} (hR_pos : 0 < R) (h : ℂ → ℂ) :
 lemma lem_orderne0 (f : ℂ → ℂ) (hf : AnalyticAt ℂ f 0) (hf0 : f 0 = 0) :
     analyticOrderAt f 0 ≠ 0 := by exact (AnalyticAt.analyticOrderAt_ne_zero hf).mpr hf0
 
-lemma lem_ordernetop (f : ℂ → ℂ) (hf : AnalyticAt ℂ f 0) (hf_ne_zero : ¬(∀ᶠ z in nhds 0, f z = 0)) :
+lemma lem_ordernetop (f : ℂ → ℂ) (_hf : AnalyticAt ℂ f 0) (hf_ne_zero : ¬(∀ᶠ z in nhds 0, f z = 0)) :
     analyticOrderAt f 0 ≠ ⊤ := by
   intro h
   rw [analyticOrderAt_eq_top] at h
@@ -683,7 +683,7 @@ lemma lem_ordernatcast2 {R : ℝ} (hR_pos : 0 < R) (f : ℂ → ℂ) (hf0 : f 0 
     refine Filter.mem_of_superset (Metric.ball_mem_nhds (0 : ℂ) hR_pos) ?subset
     exact Metric.ball_subset_closedBall
   have hf_within : AnalyticWithinAt ℂ f (Metric.closedBall 0 R) 0 := hf 0 (by
-    simp [Metric.mem_closedBall, dist_zero_right, hR_pos.le])
+    simp [Metric.mem_closedBall, hR_pos.le])
   have hf_at0 : AnalyticAt ℂ f 0 := analyticWithinAt_to_analyticAt hS hf_within
 
   -- Define the target function g
@@ -748,8 +748,8 @@ lemma lem_ordernatcast2 {R : ℝ} (hR_pos : 0 < R) (f : ℂ → ℂ) (hf0 : f 0 
       -- Rewrite fderiv using the product rule and simplify
       rw [h_fderiv_prod]
       rw [fderiv_fun_mul' h_diff_id h_diff_h0]
-      simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply]
-      rw [fderiv_id']
+      simp only [add_apply, smul_apply]
+      rw [fderiv_fun_id]
       simp only [ContinuousLinearMap.id_apply]
       simp only [zero_smul, zero_add]
       simp
@@ -796,20 +796,20 @@ lemma lem_inDR (R : ℝ) (hR : R > 0) (w : ℂ) (hw : w ∈ closure (ballDR R)) 
   simp at hw
   exact hw
 
-lemma lem_notinDR (R : ℝ) (hR : R > 0) (w : ℂ) (hw : w ∉ ballDR R) : norm w ≥ R := by
+lemma lem_notinDR (R : ℝ) (_hR : R > 0) (w : ℂ) (hw : w ∉ ballDR R) : norm w ≥ R := by
   -- Apply definition of ballDR
   unfold ballDR at hw
   -- Use characterization of metric ball membership
   rw [Metric.mem_ball] at hw
   -- hw : ¬(dist w 0 < R), which is equivalent to dist w 0 ≥ R
-  push_neg at hw
+  push Not at hw
   -- Use Complex.dist_eq to relate distance to complex absolute value
   rw [Complex.dist_eq] at hw
   -- Simplify w - 0 = w
   simp at hw
   exact hw
 
-lemma lem_legeR (R : ℝ) (hR : R > 0) (w : ℂ) (hw1 : norm w ≤ R) (hw2 : norm w ≥ R) : norm w = R := by
+lemma lem_legeR (R : ℝ) (_hR : R > 0) (w : ℂ) (hw1 : norm w ≤ R) (hw2 : norm w ≥ R) : norm w = R := by
   linarith
 
 lemma lem_circleDR (R : ℝ) (hR : R > 0) (w : ℂ) (hw1 : w ∈ closure (ballDR R)) (hw2 : w ∉ ballDR R) : norm w = R := by
@@ -827,7 +827,7 @@ lemma lem_Rself2 (R : ℝ) (hR : R > 0) : |R| ≤ R := by
 lemma lem_Rself3 (R : ℝ) (hR : R > 0) : (R : ℂ) ∈ closure (ballDR R) := by
   rw [lem_ballDR R hR]
   rw [Metric.mem_closedBall]
-  simp [Complex.dist_eq]
+  simp
   exact lem_Rself2 R hR
 
 lemma lem_DRcompact (R : ℝ) (hR : R > 0) : IsCompact (closure (ballDR R)) := by
@@ -864,7 +864,7 @@ lemma lem_ExtrValThmDR (R : ℝ) (hR : R > 0) (g : closure (ballDR R) → ℂ) (
   -- Apply the extreme value theorem
   exact lem_ExtrValThm hK_compact hK_nonempty g hg
 
-lemma lem_AnalCont {R : ℝ} (hR : R > 0) (H : ℂ → ℂ) (h_analytic : AnalyticOn ℂ H (closure (ballDR R))) :
+lemma lem_AnalCont {R : ℝ} (_hR : R > 0) (H : ℂ → ℂ) (h_analytic : AnalyticOn ℂ H (closure (ballDR R))) :
 Continuous (H ∘ (Subtype.val : closure (ballDR R) → ℂ)) := by
   -- H is continuous on closure (ballDR R) since it's analytic there
   have h_cont_on : ContinuousOn H (closure (ballDR R)) := AnalyticOn.continuousOn h_analytic
@@ -890,7 +890,7 @@ lemma lem_ExtrValThmh {R : ℝ} (hR : R > 0) (h : ℂ → ℂ) (h_analytic : Ana
   simp [Function.comp] at this
   exact this
 
-lemma lem_MaxModP (R : ℝ) (hR : R > 0) (h : ℂ → ℂ) (h_analytic : AnalyticOn ℂ h (closure (ballDR R))) (w : ℂ) (hw_in_DR : w ∈ ballDR R) (hw_max : ∀ z ∈ ballDR R, norm (h z) ≤ norm (h w)) : ∀ z ∈ closure (ballDR R), norm (h z) = norm (h w) := by
+lemma lem_MaxModP (R : ℝ) (_hR : R > 0) (h : ℂ → ℂ) (h_analytic : AnalyticOn ℂ h (closure (ballDR R))) (w : ℂ) (hw_in_DR : w ∈ ballDR R) (hw_max : ∀ z ∈ ballDR R, norm (h z) ≤ norm (h w)) : ∀ z ∈ closure (ballDR R), norm (h z) = norm (h w) := by
   -- The ball is preconnected (since metric balls are convex)
   have h_preconnected : IsPreconnected (ballDR R) := by
     unfold ballDR
@@ -1010,10 +1010,10 @@ theorem lem_MaxModv3 (R : ℝ) (hR : R > 0) (h : ℂ → ℂ) (h_analytic : Anal
     let z_sub : closure (ballDR R) := ⟨z, hz_sub⟩
     have := hv_max z_sub
     -- Simplify the coercions
-    simp [v] at this
+    simp  at this
     exact this
 
-lemma lem_MaxModv4 (R B : ℝ) (hR : R > 0) (hB : B ≥ 0)
+lemma lem_MaxModv4 (R B : ℝ) (hR : R > 0) (_hB : B ≥ 0)
   (h : ℂ → ℂ) (h_analytic : AnalyticOn ℂ h (closure (ballDR R)))
   (h_boundary_bound : ∀ z : ℂ, norm z = R → norm (h z) ≤ B) :
 ∃ v : ℂ, norm v = R ∧ (∀ w : ℂ, w ∈ closure (ballDR R) → norm (h v) ≥ norm (h w)) ∧ norm (h v) ≤ B := by
@@ -1044,8 +1044,8 @@ lemma lem_HardMMP (R B : ℝ) (hR : R > 0) (hB : B ≥ 0)
   -- Combine the inequalities
   linarith [h1, h2]
 
-lemma lem_EasyMMP (R B : ℝ) (hR : R > 0) (hB : B ≥ 0)
-  (h : ℂ → ℂ) (h_analytic : AnalyticOn ℂ h (closure (ballDR R)))
+lemma lem_EasyMMP (R B : ℝ) (hR : R > 0) (_hB : B ≥ 0)
+  (h : ℂ → ℂ) (_h_analytic : AnalyticOn ℂ h (closure (ballDR R)))
   (h_closure_bound : ∀ w : ℂ, w ∈ closure (ballDR R) → norm (h w) ≤ B) :
 ∀ z : ℂ, norm z = R → norm (h z) ≤ B := by
   intro z hz
@@ -1071,8 +1071,8 @@ theorem lem_MMP (R B : ℝ) (hR : R > 0) (hB : B ≥ 0) (h : ℂ → ℂ) (h_ana
     intro h_boundary_bound
     exact lem_HardMMP R B hR hB h h_analytic h_boundary_bound
 
-lemma lem_denominator_nonzero (R M : ℝ) (hR : R > 0) (hM : M > 0)
-  (f : ℂ → ℂ) (h_analytic : AnalyticOn ℂ f (closure (ballDR R)))
+lemma lem_denominator_nonzero (R M : ℝ) (_hR : R > 0) (hM : M > 0)
+  (f : ℂ → ℂ) (_h_analytic : AnalyticOn ℂ f (closure (ballDR R)))
   (h_re_bound : ∀ z : ℂ, z ∈ closure (ballDR R) → Complex.re (f z) ≤ M) :
 ∀ z : ℂ, z ∈ closure (ballDR R) → (2 * M - f z) ≠ 0 := by
   intro z hz
@@ -1081,8 +1081,8 @@ lemma lem_denominator_nonzero (R M : ℝ) (hR : R > 0) (hM : M > 0)
   -- Show that Complex.re (f z) ≤ M
   exact h_re_bound z hz
 
-lemma lem_f_vs_2M_minus_f (R M : ℝ) (hR : R > 0) (hM : M > 0)
-  (f : ℂ → ℂ) (h_analytic : AnalyticOn ℂ f (closure (ballDR R)))
+lemma lem_f_vs_2M_minus_f (R M : ℝ) (_hR : R > 0) (hM : M > 0)
+  (f : ℂ → ℂ) (_h_analytic : AnalyticOn ℂ f (closure (ballDR R)))
   (h_re_bound : ∀ z : ℂ, z ∈ closure (ballDR R) → Complex.re (f z) ≤ M) :
 ∀ z : ℂ, z ∈ closure (ballDR R) → norm (f z) / norm (2 * M - f z) ≤ 1 := by
   intro z hz
@@ -1094,14 +1094,14 @@ lemma lem_f_vs_2M_minus_f (R M : ℝ) (hR : R > 0) (hM : M > 0)
 lemma fderiv_factorization_at_zero (R : ℝ) (hR : R > 0) (f h : ℂ → ℂ)
   (h_analytic_f : AnalyticOn ℂ f (closure (ballDR R)))
   (h_analytic_h : AnalyticOn ℂ h (closure (ballDR R)))
-  (h_zero : f 0 = 0)
+  (_h_zero : f 0 = 0)
   (h_factor : ∀ z ∈ closure (ballDR R), f z = z * h z) :
   (fderiv ℂ f 0) 1 = h 0 := by
   -- First show that 0 is in the closure of ballDR R
   have h_zero_in : (0 : ℂ) ∈ closure (ballDR R) := by
     rw [lem_ballDR R hR]
     rw [Metric.mem_closedBall]
-    simp [Complex.dist_eq]
+    simp
     linarith [hR]
 
   -- Get differentiability from analyticity
@@ -1118,7 +1118,7 @@ lemma fderiv_factorization_at_zero (R : ℝ) (hR : R > 0) (f h : ℂ → ℂ)
     constructor
     · exact Metric.isOpen_ball
     · rw [Metric.mem_ball]
-      simp [Complex.dist_eq]
+      simp
       exact hR
 
   have h_diff_f : DifferentiableAt ℂ f 0 := h_diff_on_f.differentiableAt h_nhds_mem
@@ -1141,8 +1141,8 @@ lemma fderiv_factorization_at_zero (R : ℝ) (hR : R > 0) (f h : ℂ → ℂ)
   rw [fderiv_fun_mul' h_diff_id h_diff_h]
 
   -- Evaluate at 1 and simplify
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply]
-  rw [fderiv_id']
+  simp only [add_apply, smul_apply]
+  rw [fderiv_fun_id]
   simp only [ContinuousLinearMap.id_apply]
   -- We have (0 : ℂ) • (fderiv ℂ h 0) 1 + h 0 • 1
   -- Since 0 • anything = 0, this becomes h 0 • 1
@@ -1180,18 +1180,18 @@ AnalyticOn ℂ (fun z ↦ if z = 0 then (fderiv ℂ f 0) 1 else f z / z) (closur
     -- Since z ≠ 0, the if-then-else evaluates to the else branch
     simp [g, if_neg hz.2]
 
-lemma lem_quotient_analytic {R : ℝ} (hR : R > 0) (h1 h2 : ℂ → ℂ)
+lemma lem_quotient_analytic {R : ℝ} (_hR : R > 0) (h1 h2 : ℂ → ℂ)
   (h_analytic1 : AnalyticOn ℂ h1 (closure (ballDR R)))
   (h_analytic2 : AnalyticOn ℂ h2 (closure (ballDR R)))
   (h_nonzero : ∀ z ∈ closure (ballDR R), h2 z ≠ 0) :
 AnalyticOn ℂ (fun z ↦ h1 z / h2 z) (closure (ballDR R)) := by
   exact AnalyticOn.div h_analytic1 h_analytic2 h_nonzero
 
-noncomputable def f_M (R M : ℝ) (hR : R > 0) (hM : M > 0)
+noncomputable def f_M (R M : ℝ) (_hR : R > 0) (_hM : M > 0)
     (f : ℂ → ℂ)
-    (h_analytic : AnalyticOn ℂ f (closure (ballDR R)))
-    (h_zero : f 0 = 0)
-    (h_re_bound : ∀ z : ℂ, z ∈ closure (ballDR R) → Complex.re (f z) ≤ M) :
+    (_h_analytic : AnalyticOn ℂ f (closure (ballDR R)))
+    (_h_zero : f 0 = 0)
+    (_h_re_bound : ∀ z : ℂ, z ∈ closure (ballDR R) → Complex.re (f z) ≤ M) :
 ℂ → ℂ := fun z ↦ (if z = 0 then (fderiv ℂ f 0) 1 else f z / z) / (2 * M - f z)
 
 lemma lem_g_analytic (R M : ℝ) (hR : R > 0) (hM : M > 0)
@@ -1233,7 +1233,7 @@ AnalyticOn ℂ (f_M R M hR hM f h_analytic h_zero h_re_bound) (closure (ballDR R
     unfold h₂
     exact lem_denominator_nonzero R M hR hM f h_analytic h_re_bound z hz
 
-lemma lem_absab (a b : ℂ) (hb : b ≠ 0) : norm (a / b) = norm a / norm b := by
+lemma lem_absab (a b : ℂ) (_hb : b ≠ 0) : norm (a / b) = norm a / norm b := by
   exact IsAbsoluteValue.abv_div norm a b
 
 lemma lem_g_on_boundaryz (R M : ℝ) (hR : R > 0) (hM : M > 0)
@@ -1304,7 +1304,7 @@ lemma lem_g_on_boundary (R M : ℝ) (hR : R > 0) (hM : M > 0)
 lemma lem_f_vs_2M_minus_fR (R M : ℝ) (hR : R > 0) (hM : M > 0)
     (f : ℂ → ℂ)
     (h_analytic : AnalyticOn ℂ f (closure (ballDR R)))
-    (h_zero : f 0 = 0)
+    (_h_zero : f 0 = 0)
     (h_re_bound : ∀ z : ℂ, z ∈ closure (ballDR R) → Complex.re (f z) ≤ M)
     (z : ℂ) (hz_in_closure : z ∈ closure (ballDR R)) :
 (norm (f z) / R) / norm (2 * M - f z) ≤ 1 / R := by
@@ -1494,7 +1494,7 @@ R * norm (f z) ≤ r * norm (2 * M - f z) := by
   by_cases h_case : f z = 0
   · -- Case: f z = 0, then R * 0 ≤ r * norm (2 * M - f z)
     rw [h_case]
-    simp [AbsoluteValue.map_zero, mul_zero]
+    simp [mul_zero]
     exact lem_nonneg_product_with_real_abs r M hr_pos hM
   · -- Case: f z ≠ 0, so norm (f z) > 0
     have h_num_pos : norm (f z) > 0 :=
@@ -1625,7 +1625,7 @@ def I := Complex.I
 
 lemma cauchy_formula_deriv {f : ℂ → ℂ} {R_analytic r_z r_int : ℝ}
     (hf_domain : ∃ U, IsOpen U ∧ Metric.closedBall 0 R_analytic ⊆ U ∧ DifferentiableOn ℂ f U)
-    (h_r_z_pos : 0 < r_z)
+    (_h_r_z_pos : 0 < r_z)
     (h_r_z_lt_r_int : r_z < r_int)
     (h_r_int_lt_R_analytic : r_int < R_analytic)
     {z : ℂ} (hz : z ∈ Metric.closedBall 0 r_z) :
@@ -1869,7 +1869,7 @@ lemma one_div_two_pi_pos : (1 : ℝ) / (2 * Real.pi) > 0 := by
   · norm_num
   · exact h_2pi_pos
 
-lemma abs_integral_le_integral_abs {a b : ℝ} {g : ℝ → ℂ} (hab : a ≤ b) : norm (∫ (t : ℝ) in Set.Icc a b, g t) ≤ ∫ (t : ℝ) in Set.Icc a b, norm (g t) := by
+lemma abs_integral_le_integral_abs {a b : ℝ} {g : ℝ → ℂ} (_hab : a ≤ b) : norm (∫ (t : ℝ) in Set.Icc a b, g t) ≤ ∫ (t : ℝ) in Set.Icc a b, norm (g t) := by
   -- Apply the general triangle inequality for integrals from measure theory
   -- Since norm is the norm on ℂ, this follows directly
   exact MeasureTheory.norm_integral_le_integral_norm g
@@ -1881,7 +1881,7 @@ lemma abs_ofReal_mul_complex (c : ℝ) (z : ℂ) (hc : c ≥ 0) : norm (↑c * z
   -- Now show that norm (↑c) = c when c ≥ 0
   congr 1
   -- Use simp to handle the deprecated lemmas, then prove the remaining goal
-  simp [Complex.norm_real]
+  simp
   assumption
 
 lemma complex_abs_mul (a b : ℂ) : norm (a * b) = norm a * norm b :=
@@ -1948,10 +1948,10 @@ norm ((r_int * Complex.exp (I * t) * f (r_int * Complex.exp (I * t))) / ((r_int 
   exact lem_integral_modulus_inequality
 
 lemma lem_modulus_of_integrand_product2 {f : ℂ → ℂ} {R_analytic r_z r_int : ℝ} (t : ℝ)
-    (hf_domain : ∃ U, IsOpen U ∧ Metric.closedBall 0 R_analytic ⊆ U ∧ DifferentiableOn ℂ f U)
-    (h_r_z_pos : 0 < r_z)
-    (h_r_z_lt_r_int : r_z < r_int)
-    (h_r_int_lt_R_analytic : r_int < R_analytic) :
+    (_hf_domain : ∃ U, IsOpen U ∧ Metric.closedBall 0 R_analytic ⊆ U ∧ DifferentiableOn ℂ f U)
+    (_h_r_z_pos : 0 < r_z)
+    (_h_r_z_lt_r_int : r_z < r_int)
+    (_h_r_int_lt_R_analytic : r_int < R_analytic) :
     norm (f (r_int * Complex.exp (I * t)) * (r_int * Complex.exp (I * t))) =
 norm (f (r_int * Complex.exp (I * t))) * norm (r_int * Complex.exp (I * t)) := by
   -- Since norm is the norm, use the multiplicative property of norms
@@ -2025,9 +2025,9 @@ lemma lem_reverse_triangle (w z : ℂ) : norm w - norm z ≤ norm (w - z) := by
   exact norm_sub_norm_le w z
 
 lemma lem_reverse_triangle2 {R_analytic r_z r_int : ℝ} {t : ℝ} {z : ℂ}
-    (h_r_z_pos : 0 < r_z)
-    (h_r_z_lt_r_int : r_z < r_int)
-    (h_r_int_lt_R_analytic : r_int < R_analytic) :
+    (_h_r_z_pos : 0 < r_z)
+    (_h_r_z_lt_r_int : r_z < r_int)
+    (_h_r_int_lt_R_analytic : r_int < R_analytic) :
 norm (r_int * Complex.exp (I * t)) - norm z ≤ norm (r_int * Complex.exp (I * t) - z) := by
   -- Apply lem_reverse_triangle with w = r_int * Complex.exp (I * t)
   exact lem_reverse_triangle (r_int * Complex.exp (I * t)) z
@@ -2035,7 +2035,7 @@ norm (r_int * Complex.exp (I * t)) - norm z ≤ norm (r_int * Complex.exp (I * t
 lemma lem_reverse_triangle3 {R_analytic r_z r_int : ℝ} {t : ℝ} {z : ℂ}
     (h_r_z_pos : 0 < r_z)
     (h_r_z_lt_r_int : r_z < r_int)
-    (h_r_int_lt_R_analytic : r_int < R_analytic) :
+    (_h_r_int_lt_R_analytic : r_int < R_analytic) :
 r_int - norm z ≤ norm (r_int * Complex.exp (I * t) - z) := by
   -- First establish that |r_int * e^{it}| = r_int
   have h_mod : norm (r_int * Complex.exp (I * t)) = r_int := by
@@ -2048,9 +2048,9 @@ r_int - norm z ≤ norm (r_int * Complex.exp (I * t) - z) := by
   exact h_triangle
 
 lemma lem_zrr1 {R_analytic r_z r_int : ℝ}
-    (h_r_z_pos : 0 < r_z)
+    (_h_r_z_pos : 0 < r_z)
     (h_r_z_lt_r_int : r_z < r_int)
-    (h_r_int_lt_R_analytic : r_int < R_analytic)
+    (_h_r_int_lt_R_analytic : r_int < R_analytic)
     {z : ℂ} (hz : z ∈ Metric.closedBall 0 r_z) :
 0 < r_int - norm z := by
   -- From membership in closed ball, get bound on norm
@@ -2087,7 +2087,7 @@ r_int - r_z ≤ norm (r_int * Complex.exp (I * t) - z) := by
   -- Combine using transitivity
   exact le_trans h2 h3
 
-lemma lem_rr11 {r r' : ℝ} (h_r_pos : 0 < r) (h_r_lt_r_prime : r < r') : r' - r > 0 := by
+lemma lem_rr11 {r r' : ℝ} (_h_r_pos : 0 < r) (h_r_lt_r_prime : r < r') : r' - r > 0 := by
   linarith
 
 lemma lem_rr12 {r r' : ℝ} (h_r_pos : 0 < r) (h_r_lt_r_prime : r < r') :
@@ -2115,10 +2115,10 @@ lemma lem_zrr3 {R_analytic r_z r_int : ℝ} {t : ℝ} {z : ℂ}
   exact h_sq
 
 lemma lem_zrr4 {R_analytic r_z r_int : ℝ} (t : ℝ)
-    (h_r_z_pos : 0 < r_z)
-    (h_r_z_lt_r_int : r_z < r_int)
-    (h_r_int_lt_R_analytic : r_int < R_analytic)
-    {z : ℂ} (hz : z ∈ Metric.closedBall 0 r_z) :
+    (_h_r_z_pos : 0 < r_z)
+    (_h_r_z_lt_r_int : r_z < r_int)
+    (_h_r_int_lt_R_analytic : r_int < R_analytic)
+    {z : ℂ} (_hz : z ∈ Metric.closedBall 0 r_z) :
 norm ((r_int * Complex.exp (I * t) - z) ^ 2) = (norm (r_int * Complex.exp (I * t) - z)) ^ 2 := by
   -- Apply lem_modulus_of_square with c = r_int * Complex.exp (I * t) - z
   exact lem_modulus_of_square (r_int * Complex.exp (I * t) - z)
@@ -2170,12 +2170,12 @@ lemma lem_reverse_triangle6 {R_analytic r_z r_int : ℝ} (t : ℝ)
   -- Apply pow_ne_zero (which is the Mathlib version of mul_self_ne_zero for powers)
   exact pow_ne_zero 2 h_ne_zero
 
-lemma lem_absdiv {a b : ℂ} (hb : b ≠ 0) : norm (a / b) = norm a / norm b := by
+lemma lem_absdiv {a b : ℂ} (_hb : b ≠ 0) : norm (a / b) = norm a / norm b := by
   -- norm is the norm, so we can use norm_div
   exact norm_div a b
 
 lemma lem_modulus_of_integrand_product {f : ℂ → ℂ} {R_analytic r_z r_int : ℝ} (t : ℝ)
-    (hf_domain : ∃ U, IsOpen U ∧ Metric.closedBall 0 R_analytic ⊆ U ∧ DifferentiableOn ℂ f U)
+    (_hf_domain : ∃ U, IsOpen U ∧ Metric.closedBall 0 R_analytic ⊆ U ∧ DifferentiableOn ℂ f U)
     (h_r_z_pos : 0 < r_z)
     (h_r_z_lt_r_int : r_z < r_int)
     (h_r_int_lt_R_analytic : r_int < R_analytic)
@@ -2221,7 +2221,7 @@ lemma lem_modulus_of_product2 {f : ℂ → ℂ} {R_analytic r_z r_int : ℝ} (t 
   rw [lem_modulus_of_integrand_product3 t hf_domain h_r_z_pos h_r_z_lt_r_int h_r_int_lt_R_analytic]
 
 lemma lem_modulus_of_product3 {f : ℂ → ℂ} {R_analytic r_z r_int : ℝ} (t : ℝ)
-    (hf : DifferentiableOn ℂ f (Metric.closedBall 0 R_analytic))
+    (_hf : DifferentiableOn ℂ f (Metric.closedBall 0 R_analytic))
     (h_r_z_pos : 0 < r_z)
     (h_r_z_lt_r_int : r_z < r_int)
     (h_r_int_lt_R_analytic : r_int < R_analytic)
@@ -2426,7 +2426,7 @@ norm ((f (r_int * Complex.exp (I * t)) * (r_int * Complex.exp (I * t))) / ((r_in
 lemma lem_integral_inequality_aux {g : ℝ → ℝ} {C a b : ℝ} (hab : a ≤ b)
     (h_integrable : IntervalIntegrable g MeasureTheory.volume a b)
     (h_bound : ∀ t ∈ Set.Icc a b, g t ≤ C) :
-∫ t in a..b, g t ≤ ∫ t in a..b, C := by
+∫ t in a..b, g t ≤ ∫ _t in a..b, C := by
   -- Apply monotonicity of interval integrals
   -- We need integrability of both functions and the pointwise inequality
   have h_const_integrable : IntervalIntegrable (fun _ => C) MeasureTheory.volume a b :=
@@ -2442,7 +2442,7 @@ lemma lem_integral_inequality_aux {g : ℝ → ℝ} {C a b : ℝ} (hab : a ≤ b
 lemma lem_integral_inequality {g : ℝ → ℝ} {C a b : ℝ} (hab : a ≤ b)
     (h_integrable : IntervalIntegrable g MeasureTheory.volume a b)
     (h_bound : ∀ t ∈ Set.Icc a b, g t ≤ C) :
-∫ t in Set.Icc a b, g t ≤ ∫ t in Set.Icc a b, C := by
+∫ t in Set.Icc a b, g t ≤ ∫ _t in Set.Icc a b, C := by
   rw [MeasureTheory.integral_Icc_eq_integral_Ioc, MeasureTheory.integral_Icc_eq_integral_Ioc]
   rw [← intervalIntegral.integral_of_le hab, ← intervalIntegral.integral_of_le hab]
   exact lem_integral_inequality_aux hab h_integrable h_bound
@@ -2558,7 +2558,7 @@ IntervalIntegrable (fun t => norm ((r_int * Complex.exp (I * t) * f (r_int * Com
     exact lem_reverse_triangle6 t h_r_z_pos h_r_z_lt_r_int h_r_int_lt_R_analytic hz
 
 lemma integral_const_over_interval (C : ℝ) :
-∫ t in Set.Icc 0 (2 * Real.pi), C = (2 * Real.pi) * C := by
+∫ _t in Set.Icc 0 (2 * Real.pi), C = (2 * Real.pi) * C := by
   -- First convert from Set.Icc to Set.Ioc using integral_Icc_eq_integral_Ioc
   rw [MeasureTheory.integral_Icc_eq_integral_Ioc]
   -- Then convert from Set.Ioc to interval integral using integral_of_le (in reverse)
@@ -2641,7 +2641,7 @@ norm (deriv f z) ≤ (2 * r_int ^ 2 * M) / ((R_analytic - r_int) * (r_int - r_z)
   exact le_trans h1 h3
   simp [Real.pi_nonneg]
 
-lemma lem_integral_of_1 : ∫ (t : ℝ) in Set.Icc 0 (2 * Real.pi), (1 : ℝ) = 2 * Real.pi := by
+lemma lem_integral_of_1 : ∫ (_t : ℝ) in Set.Icc 0 (2 * Real.pi), (1 : ℝ) = 2 * Real.pi := by
   -- Convert Set.Icc to Set.Ioc first
   rw [MeasureTheory.integral_Icc_eq_integral_Ioc]
   -- Convert Set.Ioc to interval notation (using integral_of_le in reverse)
@@ -2653,7 +2653,7 @@ lemma lem_integral_of_1 : ∫ (t : ℝ) in Set.Icc 0 (2 * Real.pi), (1 : ℝ) = 
   -- Prove 0 ≤ 2 * Real.pi for integral_of_le
   exact mul_nonneg (by norm_num) Real.pi_pos.le
 
-lemma lem_integral_2 : (1 / (2 * Real.pi)) * (∫ (t : ℝ) in Set.Icc 0 (2 * Real.pi), (1 : ℝ)) = 1 := by
+lemma lem_integral_2 : (1 / (2 * Real.pi)) * (∫ (_t : ℝ) in Set.Icc 0 (2 * Real.pi), (1 : ℝ)) = 1 := by
   -- Apply lem_integral_of_1 to rewrite the integral
   rw [lem_integral_of_1]
   -- Now we have (1 / (2 * Real.pi)) * (2 * Real.pi) = 1
@@ -2675,13 +2675,13 @@ norm (deriv f z) ≤ (2 * r_int ^ 2 * M) / ((R_analytic - r_int) * (r_int - r_z)
   exact lem_f_prime_bound_by_integral_of_constant hM_pos hR_analytic_pos h_r_z_pos h_r_z_lt_r_int h_r_int_lt_R_analytic hf_domain hf0 hRe_f_le_M hz
 
 lemma lem_r_prime_gt_r {r R : ℝ}
-    (h_r_pos : 0 < r)
+    (_h_r_pos : 0 < r)
     (h_r_lt_R : r < R) :
 r < (r + R) / 2 := by
   linarith
 
 lemma lem_r_prime_lt_R {r R : ℝ}
-    (h_r_pos : 0 < r)
+    (_h_r_pos : 0 < r)
     (h_r_lt_R : r < R) :
 (r + R) / 2 < R := by
   -- Use the theorem add_div_two_lt_right: (a + b) / 2 < b ↔ a < b
@@ -2700,15 +2700,15 @@ r < (r + R) / 2 ∧ (r + R) / 2 < R := by
     exact lem_r_prime_lt_R h_r_pos h_r_lt_R
 
 lemma lem_calc_R_minus_r_prime {r R : ℝ}
-    (h_r_pos : 0 < r)
-    (h_r_lt_R : r < R) :
+    (_h_r_pos : 0 < r)
+    (_h_r_lt_R : r < R) :
 R - ((r + R) / 2) = (R - r) / 2 := by
   field_simp
   ring
 
 lemma lem_calc_r_prime_minus_r {r R : ℝ}
-    (h_r_pos : 0 < r)
-    (h_r_lt_R : r < R) :
+    (_h_r_pos : 0 < r)
+    (_h_r_lt_R : r < R) :
 ((r + R) / 2) - r = (R - r) / 2 := by
   -- Multiply through by 2 to clear denominators
   field_simp
@@ -2733,9 +2733,9 @@ lemma lem_calc_denominator_specific {r R : ℝ}
   ring
 
 lemma lem_calc_numerator_specific {M r R : ℝ}
-    (hM_pos : 0 < M)
-    (hr_pos : 0 < r)
-    (hr_lt_R : r < R) :
+    (_hM_pos : 0 < M)
+    (_hr_pos : 0 < r)
+    (_hr_lt_R : r < R) :
 2 * (((r + R) / 2) ^ 2) * M = ((R + r) ^ 2 * M) / 2 := by
   -- Use ring to handle the algebraic manipulation
   ring
@@ -2747,7 +2747,7 @@ lemma lem_frac_simplify {M r R : ℝ}
     let r_prime := (r + R) / 2
 (2 * (r_prime ^ 2) * M) / ((R - r_prime) * (r_prime - r) ^ 2) = (((R + r) ^ 2 * M) / 2) / (((R - r) ^ 3) / 8) := by
   -- Unfold the definition of r_prime
-  simp only [show (r + R) / 2 = (r + R) / 2 from rfl]
+  simp only
   -- Apply the numerator lemma
   have h_num := lem_calc_numerator_specific hM_pos hr_pos hr_lt_R
   -- Apply the denominator lemma
@@ -2757,7 +2757,7 @@ lemma lem_frac_simplify {M r R : ℝ}
 
 lemma lem_frac_simplify2 {M r R : ℝ}
     (hM_pos : 0 < M)
-    (hr_pos : 0 < r)
+    (_hr_pos : 0 < r)
     (hr_lt_R : r < R) :
 ((R + r) ^ 2 * M / 2) / ((R - r) ^ 3 / 8) = (4 * (R + r) ^ 2 * M) / ((R - r) ^ 3) := by
   -- This is a division of fractions: (a/b) / (c/d) = (a/b) * (d/c) = ad/bc
@@ -2783,7 +2783,7 @@ lemma lem_frac_simplify3 {M r R : ℝ}
     let r_prime := (r + R) / 2
 (2 * (r_prime ^ 2) * M) / ((R - r_prime) * (r_prime - r) ^ 2) = (4 * (R + r) ^ 2 * M) / ((R - r) ^ 3) := by
   -- Unfold the let definition
-  simp only [show (r + R) / 2 = (r + R) / 2 from rfl]
+  simp only
   -- Apply lem_frac_simplify to get the intermediate form
   have h1 := lem_frac_simplify hM_pos hr_pos hr_lt_R
   -- Apply lem_frac_simplify2 to complete the transformation
@@ -2858,7 +2858,7 @@ lemma lem_ineq_R_plus_r_sq_lt_2R_sq {r R : ℝ}
   unfold a b at this
   exact this
 
-lemma lem_2R_sq_is_4R_sq {R : ℝ} (hR_pos : 0 < R) : (2 * R) ^ 2 = 4 * R ^ 2 := by
+lemma lem_2R_sq_is_4R_sq {R : ℝ} (_hR_pos : 0 < R) : (2 * R) ^ 2 = 4 * R ^ 2 := by
   -- Use ring to simplify the algebraic expression
   ring
 
@@ -2919,11 +2919,11 @@ lemma lem_bound_after_substitution {M r R : ℝ}
     let r_prime := (r + R) / 2
 (2 * (r_prime ^ 2) * M) / ((R - r_prime) * (r_prime - r) ^ 2) ≤ (16 * R ^ 2 * M) / ((R - r) ^ 3) := by
   -- Unfold the let binding
-  simp only [show (r + R) / 2 = (r + R) / 2 from rfl]
+  simp only
   -- Apply lem_frac_simplify3 to rewrite the left side
   have h1 := lem_frac_simplify3 hM_pos hr_pos hr_lt_R
   -- Unfold the let in h1 as well
-  simp only [show (r + R) / 2 = (r + R) / 2 from rfl] at h1
+  simp only  at h1
   rw [h1]
   -- Apply lem_simplify_final_bound to get strict inequality
   have h2 := lem_simplify_final_bound hM_pos hr_pos hr_lt_R
@@ -2970,9 +2970,9 @@ open scoped Interval
 /-- Definition 1: `I_f` defined along the taxicab (axis-aligned) path. -/
 noncomputable def If_taxicab
     {r1 R R0: ℝ}
-    (hr1_pos : 0 < r1) (hr1_lt_R : r1 < R) (hR_lt_R0 : R < R0) (hR0_lt_one : R0 < 1)
+    (_hr1_pos : 0 < r1) (_hr1_lt_R : r1 < R) (_hR_lt_R0 : R < R0) (_hR0_lt_one : R0 < 1)
     (f : ℂ → ℂ)
-    (hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) R)) :
+    (_hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) R)) :
     (Metric.closedBall (0 : ℂ) r1) → ℂ :=
   fun z =>
     (∫ t in (0 : ℝ)..z.1.re, f (t : ℂ))
@@ -2985,7 +2985,7 @@ lemma def_If_z_plus_h
     {f : ℂ → ℂ}
     (hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) R))
     {z h : ℂ}
-    (hz : z ∈ Metric.closedBall (0 : ℂ) r1)
+    (_hz : z ∈ Metric.closedBall (0 : ℂ) r1)
     (hzh : z + h ∈ Metric.closedBall (0 : ℂ) r1) :
     If_taxicab hr1_pos hr1_lt_R hR_lt_R0 hR0_lt_one f hf ⟨z + h, hzh⟩
       = (∫ t in (0 : ℝ)..(z + h).re, f (t : ℂ))
@@ -3012,8 +3012,8 @@ lemma def_If_w
     {f : ℂ → ℂ}
     (hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) R))
     {z h : ℂ}
-    (hz : z ∈ Metric.closedBall (0 : ℂ) r1)
-    (hzh : z + h ∈ Metric.closedBall (0 : ℂ) r1)
+    (_hz : z ∈ Metric.closedBall (0 : ℂ) r1)
+    (_hzh : z + h ∈ Metric.closedBall (0 : ℂ) r1)
     (hw : ((z + h).re : ℂ) + Complex.I * z.im ∈ Metric.closedBall (0 : ℂ) r1) :
     let w : ℂ := ((z + h).re : ℂ) + Complex.I * z.im
     If_taxicab hr1_pos hr1_lt_R hR_lt_R0 hR0_lt_one f hf ⟨w, hw⟩
@@ -3088,7 +3088,7 @@ lemma abs_le_abs_of_mem_uIcc_zero {b t : ℝ} (ht : t ∈ Set.uIcc (0 : ℝ) b) 
 
 lemma vertical_intervalIntegrable_of_mem_ball
     {r1 R R0 : ℝ}
-    (hr1_pos : 0 < r1) (hr1_lt_R : r1 < R) (hR_lt_R0 : R < R0) (hR0_lt_one : R0 < 1)
+    (_hr1_pos : 0 < r1) (hr1_lt_R : r1 < R) (_hR_lt_R0 : R < R0) (_hR0_lt_one : R0 < 1)
     {f : ℂ → ℂ}
     (hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) R))
     {a : ℂ}
@@ -3509,7 +3509,7 @@ lemma intervalIntegrable_of_analyticOnNhd_of_endpoints_in_smaller_ball
 /-- Cauchy–Goursat for rectangles with mixed-corner hypotheses ensuring containment. -/
 lemma cauchy_for_rectangles
     {r1 R R0 : ℝ}
-    (hr1_pos : 0 < r1) (hr1_lt_R : r1 < R) (hR_lt_R0 : R < R0) (hR0_lt_one : R0 < 1)
+    (_hr1_pos : 0 < r1) (hr1_lt_R : r1 < R) (_hR_lt_R0 : R < R0) (_hR0_lt_one : R0 < 1)
     {f : ℂ → ℂ}
     (hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) R))
     {z w : ℂ}
@@ -3590,7 +3590,7 @@ lemma cauchy_for_rectangles
     have hpR : p ∈ Metric.closedBall (0 : ℂ) R := hS_subset_R hp
     exact (hf p hpR).differentiableAt.differentiableWithinAt
   -- 5) Apply Cauchy–Goursat theorem and normalize scalars
-  simpa [Algebra.id.smul_eq_mul, smul_eq_mul, mul_comm] using
+  simpa [smul_eq_mul, smul_eq_mul, mul_comm] using
     Complex.integral_boundary_rect_eq_zero_of_differentiableOn f z w Hdiff
 
 /-- Horizontal-strip Cauchy identity specialized to `w := (z+h).re + i z.im`. -/
@@ -3655,7 +3655,7 @@ lemma cauchy_for_horizontal_strip
 
 
 lemma integrability_from_cauchy_horizontal_strip
-    {r1 R R0 : ℝ} (hr1_pos : 0 < r1) (hr1_lt_R : r1 < R) (hR_lt_R0 : R < R0) (hR0_lt_one : R0 < 1)
+    {r1 R R0 : ℝ} (_hr1_pos : 0 < r1) (hr1_lt_R : r1 < R) (_hR_lt_R0 : R < R0) (_hR0_lt_one : R0 < 1)
     {f : ℂ → ℂ} (hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) R))
     {z h : ℂ} (hz : z ∈ Metric.closedBall (0 : ℂ) r1) (hzh : z + h ∈ Metric.closedBall (0 : ℂ) r1)
     (hw : ((z + h).re : ℂ) + Complex.I * z.im ∈ Metric.closedBall (0 : ℂ) r1) :
@@ -3868,10 +3868,10 @@ lemma If_diff_linearity
      - If_taxicab hr1_pos hr1_lt_R hR_lt_R0 hR0_lt_one f hf ⟨z, hz⟩)
     =
     ((∫ t in z.re..(z + h).re, (f (t + Complex.I * z.im) - f z))
-     + (∫ t in z.re..(z + h).re, f z))
+     + (∫ _t in z.re..(z + h).re, f z))
     + Complex.I *
       ((∫ τ in z.im..(z + h).im, (f (((z + h).re : ℂ) + Complex.I * τ) - f z))
-       + (∫ τ in z.im..(z + h).im, f z)) := by
+       + (∫ _τ in z.im..(z + h).im, f z)) := by
   -- Start with the identity from If_diff_add_sub_identity as mentioned in the informal proof
   have H := If_diff_add_sub_identity hr1_pos hr1_lt_R hR_lt_R0 hR0_lt_one hf hz hzh hw
 
@@ -3922,13 +3922,13 @@ lemma If_diff_linearity
 /-- Integrating the constant function along the L-path yields `f z * h`. -/
 lemma integral_of_constant_over_L_path
     {r1 R R0 : ℝ}
-    (hr1_pos : 0 < r1) (hr1_lt_R : r1 < R) (hR_lt_R0 : R < R0) (hR0_lt_one : R0 < 1)
+    (_hr1_pos : 0 < r1) (_hr1_lt_R : r1 < R) (_hR_lt_R0 : R < R0) (_hR0_lt_one : R0 < 1)
     {f : ℂ → ℂ}
-    (hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) R))
+    (_hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) R))
     {z h : ℂ}
-    (hz : z ∈ Metric.closedBall (0 : ℂ) r1)
-    (hzh : z + h ∈ Metric.closedBall (0 : ℂ) r1) :
-    (∫ t in z.re..(z + h).re, f z) + Complex.I * (∫ τ in z.im..(z + h).im, f z)
+    (_hz : z ∈ Metric.closedBall (0 : ℂ) r1)
+    (_hzh : z + h ∈ Metric.closedBall (0 : ℂ) r1) :
+    (∫ _t in z.re..(z + h).re, f z) + Complex.I * (∫ _τ in z.im..(z + h).im, f z)
       = f z * h := by
   -- Step 1: Apply integral_const to evaluate the integrals
   rw [intervalIntegral.integral_const, intervalIntegral.integral_const]
@@ -3958,9 +3958,9 @@ lemma integral_of_constant_over_L_path
 /-- Final decomposition with an explicit error term. -/
 noncomputable def Err
     {r1 R R0 : ℝ}
-    (hr1_pos : 0 < r1) (hr1_lt_R : r1 < R) (hR_lt_R0 : R < R0) (hR0_lt_one : R0 < 1)
+    (_hr1_pos : 0 < r1) (_hr1_lt_R : r1 < R) (_hR_lt_R0 : R < R0) (_hR0_lt_one : R0 < 1)
     (f : ℂ → ℂ)
-    (hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) R))
+    (_hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) R))
     (z h : ℂ) : ℂ :=
   (∫ t in z.re..(z + h).re, (f (t + Complex.I * z.im) - f z))
   + Complex.I * (∫ τ in z.im..(z + h).im, (f (((z + h).re : ℂ) + Complex.I * τ) - f z))
@@ -3973,7 +3973,7 @@ lemma CD_eq_fz_h
   {z h : ℂ}
   (hz : z ∈ Metric.closedBall (0 : ℂ) r1)
   (hzh : z + h ∈ Metric.closedBall (0 : ℂ) r1) :
-  (∫ t in z.re..(z + h).re, f z) + Complex.I * (∫ τ in z.im..(z + h).im, f z)
+  (∫ _t in z.re..(z + h).re, f z) + Complex.I * (∫ _τ in z.im..(z + h).im, f z)
   = f z * h := by
   simpa using
     integral_of_constant_over_L_path (r1:=r1) (R:=R) (R0:=R0)
@@ -4068,7 +4068,7 @@ lemma bound_on_Err
   have hvertnorm :
       ‖Complex.I * (∫ τ in z.im..(z + h).im, (f (((z + h).re : ℂ) + Complex.I * τ) - f z))‖
         = ‖∫ τ in z.im..(z + h).im, (f (((z + h).re : ℂ) + Complex.I * τ) - f z)‖ := by
-    simp [norm_mul, hI, one_mul]
+    simp [hI, one_mul]
 
   -- Show the sets defining S_horiz/S_vert are bounded above via compactness of images
   set SH : Set ℝ := {r | ∃ t ∈ Set.uIcc z.re (z + h).re,
@@ -4170,7 +4170,7 @@ lemma bound_on_Err
       have hw_in := hzh_mem
       have hsubset := (convex_closedBall (0 : ℂ) r1).segment_subset hz_in hw_in
       have hw' := hsubset hseg
-      simp only [γv, Metric.mem_closedBall, dist_zero_right] at hw'
+      simp only [Metric.mem_closedBall, dist_zero_right] at hw'
       rwa [Metric.mem_closedBall, dist_zero_right]
     have hmaps : Set.MapsTo γv (Set.uIcc z.im (z + h).im) (Metric.closedBall (0 : ℂ) R) := by
       intro τ hτ; have : γv τ ∈ Metric.closedBall (0 : ℂ) r1 := hseg_subset (Set.mem_image_of_mem _ hτ)
@@ -4242,11 +4242,11 @@ lemma bound_on_Err
 
   -- Simplify the interval lengths
   have hre' : (z + h).re - z.re = h.re := by
-    simp [Complex.add_re, add_comm, add_left_comm, add_assoc, add_sub_cancel]
+    simp [Complex.add_re]
   have him' : (z + h).im - z.im = h.im := by
-    simp [Complex.add_im, add_comm, add_left_comm, add_assoc, add_sub_cancel]
-  have hre : |(z + h).re - z.re| = |h.re| := by simp [hre']
-  have him : |(z + h).im - z.im| = |h.im| := by simp [him']
+    simp [Complex.add_im]
+  have hre : |(z + h).re - z.re| = |h.re| := by simp
+  have him : |(z + h).im - z.im| = |h.im| := by simp
 
   -- Compare with S_max
   have hH' : ‖∫ t in z.re..(z + h).re, (f (t + Complex.I * z.im) - f z)‖
@@ -4277,7 +4277,7 @@ lemma bound_on_Err
           ≤ ‖∫ t in z.re..(z + h).re, (f (t + Complex.I * z.im) - f z)‖
             + ‖Complex.I * (∫ τ in z.im..(z + h).im, (f (((z + h).re : ℂ) + Complex.I * τ) - f z))‖ := hsplit
       _ = ‖∫ t in z.re..(z + h).re, (f (t + Complex.I * z.im) - f z)‖
-            + ‖∫ τ in z.im..(z + h).im, (f (((z + h).re : ℂ) + Complex.I * τ) - f z)‖ := by simp [hvertnorm]
+            + ‖∫ τ in z.im..(z + h).im, (f (((z + h).re : ℂ) + Complex.I * τ) - f z)‖ := by simp
       _ ≤ |h.re| * S_max z h f + |h.im| * S_max z h f := add_le_add hH' hV'
 
   simpa [Err] using this
@@ -4409,12 +4409,12 @@ lemma abs_sub_le_of_mem_uIcc (a b t : ℝ) (ht : t ∈ Set.uIcc a b) : |t - a| �
 lemma sub_ofReal_add_I (a b c d : ℝ) : ((a : ℂ) + Complex.I * b) - ((c : ℂ) + Complex.I * d) = ((a - c : ℝ) : ℂ) + Complex.I * (b - d) := by
   apply Complex.ext
   · -- Real part
-    simp only [Complex.sub_re, Complex.add_re, Complex.ofReal_re, Complex.I_mul_re, Complex.ofReal_im, neg_zero, add_zero, sub_zero]
+    simp only [Complex.sub_re, Complex.add_re, Complex.ofReal_re, Complex.I_mul_re, Complex.ofReal_im, neg_zero, add_zero]
     -- Now need to show: a - c = a - c + -(↑b - ↑d).im
     -- Use that ↑b - ↑d = ↑(b - d) and then (↑(b - d)).im = 0
     rw [← Complex.ofReal_sub, Complex.ofReal_im, neg_zero, add_zero]
   · -- Imaginary part
-    simp only [Complex.sub_im, Complex.add_im, Complex.ofReal_im, Complex.I_mul_im, Complex.ofReal_re, zero_add, zero_sub]
+    simp only [Complex.sub_im, Complex.add_im, Complex.ofReal_im, Complex.I_mul_im, Complex.ofReal_re, zero_add]
     -- Now need to show: b - d = (↑b - ↑d).re
     -- Use that ↑b - ↑d = ↑(b - d) and then (↑(b - d)).re = b - d
     rw [← Complex.ofReal_sub, Complex.ofReal_re]
@@ -4427,13 +4427,13 @@ lemma abs_re_im_bound (a b : ℝ) : ‖(a : ℂ) + Complex.I * b‖ ≤ |a| + |b
   · -- Goal: |a| = ‖(a : ℂ)‖
     simp [Complex.norm_real, Real.norm_eq_abs]
   · -- Goal: |b| = ‖Complex.I * (b : ℂ)‖
-    simp [norm_mul, Complex.norm_I, Complex.norm_real, Real.norm_eq_abs]
+    simp [Complex.norm_I, Complex.norm_real, Real.norm_eq_abs]
 
 lemma norm_ofReal (x : ℝ) : ‖(x : ℂ)‖ = |x| := by
   simp [Complex.norm_real, Real.norm_eq_abs]
 
 lemma norm_I_mul_ofReal (b : ℝ) : ‖Complex.I * (b : ℂ)‖ = |b| := by
-  simp [norm_mul, Complex.norm_I, Complex.norm_real, Real.norm_eq_abs]
+  simp [Complex.norm_I, Complex.norm_real, Real.norm_eq_abs]
 
 lemma abs_add_Ile (a b : ℝ) : ‖(a : ℂ) + Complex.I * b‖ ≤ |a| + |b| := by
   -- Use Complex.norm_le_abs_re_add_abs_im since norm = norm
@@ -4613,7 +4613,7 @@ lemma limit_of_S_is_zero
             -- Bound |τ - z.im| by |(z+h).im - z.im| = |h.im|
             have τ_bound0 : |τ - z.im| ≤ |(z + h).im - z.im| := (abs_sub_le_of_mem_uIcc z.im (z + h).im τ hτ).1
             have im_diff_eq : |(z + h).im - z.im| = |h.im| := by
-              simp [Complex.add_im, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
+              simp [Complex.add_im, sub_eq_add_neg, add_assoc]
             have τ_bound : |τ - z.im| ≤ |h.im| := by simpa [im_diff_eq] using τ_bound0
             -- Use the triangle inequality bound from the context
             have vertical_bound : ‖(h.re : ℝ) + Complex.I * (τ - z.im)‖ ≤ |h.re| + |τ - z.im| :=
@@ -4666,11 +4666,11 @@ lemma eventually_corner_and_sum_in_closedBall {z : ℂ} {R' : ℝ}
   -- Compute and bound ‖w - z‖ ≤ ‖h‖ via horizontal distance
   let t : ℝ := (z + h).re
   have hwz_eq : w - z = (t : ℂ) + Complex.I * z.im - z := by
-    simp [w, t, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
+    simp [w, t, sub_eq_add_neg, add_assoc]
   have eq_transform : ‖(t : ℂ) + Complex.I * z.im - z‖ = |t - z.re| :=
     abs_horizontal_diff_eq_abs_real z t
   have t_sub_re : t - z.re = h.re := by
-    simp [t, Complex.add_re, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
+    simp [t, Complex.add_re, sub_eq_add_neg, add_assoc]
   have hwz_abs2 : ‖w - z‖ = |h.re| := by
     simpa [hwz_eq, t_sub_re] using eq_transform
   have hwz_le : ‖w - z‖ ≤ ‖h‖ := by
@@ -4955,7 +4955,7 @@ lemma hasDerivAt_of_local_decomposition' (g : ℂ → ℂ) (z F : ℂ)
     calc
       h⁻¹ • (g (z + h) - g z)
           = h⁻¹ • (F * h + Err_func h) := H0
-      _ = h⁻¹ * (F * h + Err_func h) := by simp [Algebra.id.smul_eq_mul]
+      _ = h⁻¹ * (F * h + Err_func h) := by simp [smul_eq_mul]
       _ = h⁻¹ * (F * h) + h⁻¹ * (Err_func h) := by simp [mul_add]
       _ = F + Err_func h / h := by simp [h1, h2]
   -- Limit of the RHS: F + Err h / h → F
@@ -5095,7 +5095,7 @@ theorem AnalyticOnNhd.mono_closedBall {B : ℂ → ℂ} {R : ℝ} (R' : ℝ)
 /-- Lemma: B'/B is analyticOnNhd when B is analyticOnNhd and nonzero. -/
 lemma log_deriv_is_analytic
     {r1 R' R : ℝ}
-    (hr1_pos : 0 < r1) (hr1_lt_R' : r1 < R') (hR'_lt_R : R' < R) (hR_lt_one : R < 1)
+    (_hr1_pos : 0 < r1) (hr1_lt_R' : r1 < R') (_hR'_lt_R : R' < R) (_hR_lt_one : R < 1)
     {B : ℂ → ℂ}
     (hB : AnalyticOnNhd ℂ B (Metric.closedBall (0 : ℂ) R'))
     (hB_ne_zero : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, B z ≠ 0) :
@@ -5205,24 +5205,24 @@ lemma I_is_antiderivative
 /-- Definition: H(z) := exp(J(z))/B(z) where J is from I_is_antiderivative. -/
 noncomputable def H_auxiliary
     {r1 R' R : ℝ}
-    (hr1_pos : 0 < r1) (hr1_lt_R' : r1 < R') (hR'_lt_R : R' < R) (hR_lt_one : R < 1)
+    (_hr1_pos : 0 < r1) (_hr1_lt_R' : r1 < R') (_hR'_lt_R : R' < R) (_hR_lt_one : R < 1)
     {B : ℂ → ℂ}
-    (hB : AnalyticOnNhd ℂ B (Metric.closedBall (0 : ℂ) R))
-    (hB_ne_zero : ∀ z ∈ Metric.closedBall (0 : ℂ) R', B z ≠ 0)
+    (_hB : AnalyticOnNhd ℂ B (Metric.closedBall (0 : ℂ) R))
+    (_hB_ne_zero : ∀ z ∈ Metric.closedBall (0 : ℂ) R', B z ≠ 0)
     (J : ℂ → ℂ) : ℂ → ℂ :=
   fun z => Complex.exp (J z) / B z
 
 /-- Lemma: exp(J(0)) = 1 when J(0) = 0. -/
 lemma exp_I_at_zero
     {r1 R' R : ℝ}
-    (hr1_pos : 0 < r1) (hr1_lt_R' : r1 < R') (hR'_lt_R : R' < R) (hR_lt_one : R < 1)
+    (_hr1_pos : 0 < r1) (_hr1_lt_R' : r1 < R') (_hR'_lt_R : R' < R) (_hR_lt_one : R < 1)
     {B : ℂ → ℂ}
-    (hB : AnalyticOnNhd ℂ B (Metric.closedBall (0 : ℂ) R))
-    (hB_ne_zero : ∀ z ∈ Metric.closedBall (0 : ℂ) R', B z ≠ 0)
+    (_hB : AnalyticOnNhd ℂ B (Metric.closedBall (0 : ℂ) R))
+    (_hB_ne_zero : ∀ z ∈ Metric.closedBall (0 : ℂ) R', B z ≠ 0)
     {J : ℂ → ℂ}
-    (hJ : AnalyticOnNhd ℂ J (Metric.closedBall (0 : ℂ) r1))
+    (_hJ : AnalyticOnNhd ℂ J (Metric.closedBall (0 : ℂ) r1))
     (hJ_zero : J 0 = 0)
-    (hJ_deriv : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, deriv J z = deriv B z / B z) :
+    (_hJ_deriv : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, deriv J z = deriv B z / B z) :
     Complex.exp (J 0) = 1 := by
   simp [hJ_zero]
 
@@ -5234,22 +5234,22 @@ lemma H_at_zero
     (hB : AnalyticOnNhd ℂ B (Metric.closedBall (0 : ℂ) R))
     (hB_ne_zero : ∀ z ∈ Metric.closedBall (0 : ℂ) R', B z ≠ 0)
     {J : ℂ → ℂ}
-    (hJ : AnalyticOnNhd ℂ J (Metric.closedBall (0 : ℂ) r1))
+    (_hJ : AnalyticOnNhd ℂ J (Metric.closedBall (0 : ℂ) r1))
     (hJ_zero : J 0 = 0)
-    (hJ_deriv : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, deriv J z = deriv B z / B z) :
+    (_hJ_deriv : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, deriv J z = deriv B z / B z) :
     H_auxiliary hr1_pos hr1_lt_R' hR'_lt_R hR_lt_one hB hB_ne_zero J 0 = 1 / B 0 := by
   simp [H_auxiliary, hJ_zero]
 
 /-- Lemma: J'(z)B(z) = B'(z). -/
 lemma log_deriv_id
     {r1 R' R : ℝ}
-    (hr1_pos : 0 < r1) (hr1_lt_R' : r1 < R') (hR'_lt_R : R' < R) (hR_lt_one : R < 1)
+    (_hr1_pos : 0 < r1) (hr1_lt_R' : r1 < R') (_hR'_lt_R : R' < R) (_hR_lt_one : R < 1)
     {B : ℂ → ℂ}
-    (hB : AnalyticOnNhd ℂ B (Metric.closedBall (0 : ℂ) R))
+    (_hB : AnalyticOnNhd ℂ B (Metric.closedBall (0 : ℂ) R))
     (hB_ne_zero : ∀ z ∈ Metric.closedBall (0 : ℂ) R', B z ≠ 0)
     {J : ℂ → ℂ}
-    (hJ : AnalyticOnNhd ℂ J (Metric.closedBall (0 : ℂ) r1))
-    (hJ_zero : J 0 = 0)
+    (_hJ : AnalyticOnNhd ℂ J (Metric.closedBall (0 : ℂ) r1))
+    (_hJ_zero : J 0 = 0)
     (hJ_deriv : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, deriv J z = deriv B z / B z) :
     ∀ z ∈ Metric.closedBall (0 : ℂ) r1, deriv J z * B z = deriv B z := by
   intro z hz
@@ -5298,8 +5298,8 @@ lemma H_derivative_quotient_rule
     (hB_ne_zero : ∀ z ∈ Metric.closedBall (0 : ℂ) R', B z ≠ 0)
     {J : ℂ → ℂ}
     (hJ : AnalyticOnNhd ℂ J (Metric.closedBall (0 : ℂ) r1))
-    (hJ_zero : J 0 = 0)
-    (hJ_deriv : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, deriv J z = deriv B z / B z) :
+    (_hJ_zero : J 0 = 0)
+    (_hJ_deriv : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, deriv J z = deriv B z / B z) :
     ∀ z ∈ Metric.closedBall (0 : ℂ) r1,
       deriv (H_auxiliary hr1_pos hr1_lt_R' hR'_lt_R hR_lt_one hB hB_ne_zero J) z =
       (deriv (fun w => Complex.exp (J w)) z * B z - deriv B z * Complex.exp (J z)) / (B z)^2 := by
@@ -5325,14 +5325,14 @@ lemma H_derivative_quotient_rule
 
 lemma exp_I_derivative_chain_rule
     {r1 R' R : ℝ}
-    (hr1_pos : 0 < r1) (hr1_lt_R' : r1 < R') (hR'_lt_R : R' < R) (hR_lt_one : R < 1)
+    (_hr1_pos : 0 < r1) (_hr1_lt_R' : r1 < R') (_hR'_lt_R : R' < R) (_hR_lt_one : R < 1)
     {B : ℂ → ℂ}
-    (hB : AnalyticOnNhd ℂ B (Metric.closedBall (0 : ℂ) R))
-    (hB_ne_zero : ∀ z ∈ Metric.closedBall (0 : ℂ) R', B z ≠ 0)
+    (_hB : AnalyticOnNhd ℂ B (Metric.closedBall (0 : ℂ) R))
+    (_hB_ne_zero : ∀ z ∈ Metric.closedBall (0 : ℂ) R', B z ≠ 0)
     {J : ℂ → ℂ}
     (hJ : AnalyticOnNhd ℂ J (Metric.closedBall (0 : ℂ) r1))
-    (hJ_zero : J 0 = 0)
-    (hJ_deriv : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, deriv J z = deriv B z / B z) :
+    (_hJ_zero : J 0 = 0)
+    (_hJ_deriv : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, deriv J z = deriv B z / B z) :
     ∀ z ∈ Metric.closedBall (0 : ℂ) r1,
       deriv (fun w => Complex.exp (J w)) z = deriv J z * Complex.exp (J z) := by
   intro z hz
@@ -5443,7 +5443,7 @@ by
   have hB_ne_zero_r1 : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, B z ≠ 0 := by
     intro z hz; exact hB_ne_zero z (by
     have x : Metric.closedBall 0 r1 ⊆ Metric.closedBall 0 R' := Metric.closedBall_subset_closedBall (le_of_lt hr1_lt_R')
-    simp [x]
+    simp
     simp at hz
     linarith
     )
@@ -5499,10 +5499,10 @@ lemma hasDerivAt_H_auxiliary_zero_on_closedBall
   simpa [hderiv0] using hH_has
 
 lemma fderivWithin_eq_zero_of_derivWithin_eq_zero {s : Set ℂ} {f : ℂ → ℂ} {x : ℂ}
-    (hdiff : DifferentiableWithinAt ℂ f s x)
+    (_hdiff : DifferentiableWithinAt ℂ f s x)
     (hderiv : derivWithin f s x = 0) :
     fderivWithin ℂ f s x = 0 := by
-  rw [← derivWithin_fderivWithin, hderiv]
+  rw [← toSpanSingleton_derivWithin, hderiv]
   simp
 
 lemma hasDerivWithinAt_of_hasDerivAt {f : ℂ → ℂ} {s : Set ℂ} {x : ℂ}
@@ -5672,14 +5672,14 @@ lemma analytic_log_exists
 
 lemma modulus_of_exp_I
     {r1 R' R : ℝ}
-    (hr1_pos : 0 < r1) (hr1_lt_R' : r1 < R') (hR'_lt_R : R' < R) (hR_lt_one : R < 1)
+    (_hr1_pos : 0 < r1) (_hr1_lt_R' : r1 < R') (_hR'_lt_R : R' < R) (_hR_lt_one : R < 1)
     {B : ℂ → ℂ}
-    (hB : AnalyticOnNhd ℂ B (Metric.closedBall (0 : ℂ) R))
-    (hB_ne_zero : ∀ z ∈ Metric.closedBall (0 : ℂ) R', B z ≠ 0)
+    (_hB : AnalyticOnNhd ℂ B (Metric.closedBall (0 : ℂ) R))
+    (_hB_ne_zero : ∀ z ∈ Metric.closedBall (0 : ℂ) R', B z ≠ 0)
     {J : ℂ → ℂ}
-    (hJ : AnalyticOnNhd ℂ J (Metric.closedBall (0 : ℂ) r1))
-    (hJ_zero : J 0 = 0)
-    (hJ_deriv : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, deriv J z = deriv B z / B z) :
+    (_hJ : AnalyticOnNhd ℂ J (Metric.closedBall (0 : ℂ) r1))
+    (_hJ_zero : J 0 = 0)
+    (_hJ_deriv : ∀ z ∈ Metric.closedBall (0 : ℂ) r1, deriv J z = deriv B z / B z) :
     ∀ z ∈ Metric.closedBall (0 : ℂ) r1,
       norm (Complex.exp (J z)) = Real.exp (Complex.re (J z)) := by
   intro z hz
@@ -5741,7 +5741,7 @@ lemma log_modulus_as_sum
   rw [h_eq, Real.log_mul]
   · -- Show norm (B 0) ≠ 0
     -- Since norm z = ‖z‖, we need ‖B 0‖ ≠ 0, which is equivalent to B 0 ≠ 0
-    simp [norm_ne_zero_iff]
+    simp
     apply hB_ne_zero
     -- Show 0 ∈ Metric.closedBall (0 : ℂ) R
     rw [Metric.mem_closedBall, dist_self]

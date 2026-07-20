@@ -253,7 +253,7 @@ lemma lem_sigmale1 (sigma1 t1 : ℝ) : riemannZeta (sigma1 + t1 * Complex.I) = 0
   -- Use contrapositive of lem_sigmage1
   by_contra h_not_le
   -- h_not_le : ¬sigma1 ≤ 1, which means sigma1 > 1
-  push_neg at h_not_le
+  push Not at h_not_le
   -- Now we have sigma1 > 1, so by lem_sigmage1, the zeta function is nonzero
   have h_nonzero := lem_sigmage1 sigma1 t1 h_not_le
   -- But this contradicts our hypothesis h that it equals zero
@@ -351,7 +351,7 @@ lemma s_in_D12 (delta : ℝ) (hdelta_pos : 0 < delta) (t : ℝ) (hdelta_lt : del
             (1 : ℂ) + (delta : ℝ) - (3 / 2 : ℂ) := by ring
   -- Simplify to get delta - 1/2
   have h2 : (1 : ℂ) + (delta : ℝ) - (3 / 2 : ℂ) = (delta - 1/2 : ℝ) := by
-    simp [Complex.ofReal_add, Complex.ofReal_sub]
+    simp [Complex.ofReal_sub]
     ring
   -- Use the fact that norm of real number is absolute value
   rw [Complex.dist_eq, h1, h2, Complex.norm_real]
@@ -434,7 +434,7 @@ lemma s_in_closedBall_12 (δ t : ℝ) (hδ_pos : 0 < δ) (hδ_lt : δ < 1) :
     calc
       ((1 : ℂ) + (δ : ℝ)) - (3 / 2 : ℂ)
           = ((1 + δ : ℝ) : ℂ) - (3 / 2 : ℂ) := by
-              simp [add_comm, add_left_comm, add_assoc]
+              simp [add_comm]
       _ = (↑((1 + δ : ℝ) - (3 / 2 : ℝ)) : ℂ) := by
               simp [Complex.ofReal_sub]
       _ = ((δ - (1 / 2 : ℝ)) : ℂ) := by simp [h']
@@ -652,7 +652,7 @@ lemma lem_explicit1deltat :
     have hgt1 : (1 : ℝ) < |t| + 2 := by
       have : (2 : ℝ) ≤ |t| + 2 := by
         have : 0 ≤ |t| := abs_nonneg t
-        simp [two_mul, add_comm, add_left_comm, add_assoc]
+        simp []
       exact lt_of_lt_of_le (by norm_num) this
     exact le_of_lt (Real.log_pos hgt1)
   have hfinal1 :
@@ -743,7 +743,7 @@ lemma lem_Realsum {α : Type*} (s : Finset α) (f : α → ℂ) : (Finset.sum s 
 
 lemma lem_Ztfinite (t : ℝ) : Set.Finite (ZetaZerosNearPoint t) := ZetaZerosNearPoint_finite t
 
-lemma lem_sumrho1 (t : ℝ) (δ : ℝ) (hdelta_pos : δ > 0) (hdelta_lt1 : δ < 1) :
+lemma lem_sumrho1 (t : ℝ) (δ : ℝ) (_hdelta_pos : δ > 0) (_hdelta_lt1 : δ < 1) :
     (Finset.sum (Set.Finite.toFinset (ZetaZerosNearPoint_finite t))
         (fun rho1 : ℂ =>
                     ((analyticOrderAt riemannZeta rho1).toNat : ℂ) /
@@ -754,7 +754,7 @@ lemma lem_sumrho1 (t : ℝ) (δ : ℝ) (hdelta_pos : δ > 0) (hdelta_lt1 : δ < 
                       (((1 : ℂ) + δ + t * Complex.I) - rho1)).re) := by
   exact lem_Realsum (Set.Finite.toFinset (ZetaZerosNearPoint_finite t)) _
 
-lemma lem_sumrho2 (t : ℝ) (delta : ℝ) (hdelta : delta > 0) (hdelta_lt1 : delta < 1) :
+lemma lem_sumrho2 (t : ℝ) (delta : ℝ) (_hdelta : delta > 0) (_hdelta_lt1 : delta < 1) :
     (Finset.sum (Set.Finite.toFinset (ZetaZerosNearPoint_finite (2 * t)))
         (fun rho1 : ℂ => ((analyticOrderAt riemannZeta rho1).toNat : ℂ) / (((1 : ℂ) + delta + (2 * t) * Complex.I) - rho1))).re =
     Finset.sum (Set.Finite.toFinset (ZetaZerosNearPoint_finite (2 * t)))
@@ -770,7 +770,7 @@ lemma lem_1deltatrho1 (delta : ℝ) (_hdelta : delta > 0) (t : ℝ) (rho1 : ℂ)
   -- Rearrange terms to group real and imaginary parts
   ring_nf
   -- Now we need to show the result matches the right-hand side
-  simp only [Complex.ofReal_add, Complex.ofReal_sub, Complex.ofReal_one]
+  simp only [Complex.ofReal_one]
   ring
 
 lemma lem_Re1deltatrho1 (delta : ℝ) (hdelta : delta > 0) (t : ℝ) (rho1 : ℂ) (h_rho1_in_Zt : rho1 ∈ ZetaZerosNearPoint t) :
@@ -815,7 +815,7 @@ lemma lem_Re1deltatge0 (delta : ℝ) (hdelta : delta > 0) (t : ℝ) (rho1 : ℂ)
   -- Apply lem_Re1deltatneq0 to get the positive real part
   exact lem_Re1deltatneq0 delta hdelta t rho1 h_rho1_in_Zt
 
-lemma lem_Re1deltatge0m (delta : ℝ) (hdelta : delta > 0) (t : ℝ) (hdelta_lt_1 : delta < 1)
+lemma lem_Re1deltatge0m (delta : ℝ) (hdelta : delta > 0) (t : ℝ) (_hdelta_lt_1 : delta < 1)
   (rho1 : ℂ) (h_rho1_in_Zt : rho1 ∈ ZetaZerosNearPoint t) :
   (((analyticOrderAt riemannZeta rho1).toNat : ℂ) /
     (((1 : ℂ) + delta + t * Complex.I) - rho1)).re ≥ 0 := by
@@ -1058,7 +1058,7 @@ lemma lem_Z2bound :
       _ = (2 * C₁) * Real.log (abs t + 2) := by ring
 
 
-lemma lem_Z1split (delta : ℝ) (_hdelta : delta > 0) (hdelta : delta < 1) (rho : ℂ)
+lemma lem_Z1split (delta : ℝ) (_hdelta : delta > 0) (_hdelta : delta < 1) (rho : ℂ)
   (_h_rho_in_zeroZ : rho ∈ zeroZ)
   (h_rho_in_Zt : rho ∈ ZetaZerosNearPoint rho.im) :
     Finset.sum (Set.Finite.toFinset (ZetaZerosNearPoint_finite rho.im))
@@ -1089,7 +1089,7 @@ lemma re_ofReal_mul_eq (a : ℝ) (z : ℂ) : ((a : ℂ) * z).re = a * z.re := by
       simp
 
 lemma re_ofReal_div_eq (a : ℝ) (z : ℂ) : ((a : ℂ) / z).re = a * (1 / z).re := by
-  simp [div_eq_mul_inv, Complex.re_ofReal_mul]
+  simp [div_eq_mul_inv]
 
 lemma re_ofReal_div_ge_one (a : ℝ) (z : ℂ) (ha : 1 ≤ a) (hz : 0 ≤ (1 / z).re) : ((a : ℂ) / z).re ≥ (1 / z).re := by
   have hrepr : ((a : ℂ) / z).re = a * (1 / z).re := by
@@ -1165,7 +1165,7 @@ lemma riemannZeta_not_eventually_zero_of_ne_one {s : ℂ} (hs : s ≠ 1) :
   -- Evaluate at 2 to get a contradiction
   have h2ne1 : (2 : ℂ) ≠ 1 := by norm_num
   have hH2 : H (2 : ℂ) = (2 - 1) * riemannZeta (2 : ℂ) := by
-    simp [H, Function.update_of_ne h2ne1]
+    simp [H]
   have hzeta2_ne : riemannZeta (2 : ℂ) ≠ 0 :=
     riemannZeta_ne_zero_of_one_le_re (by simp)
   have hprod_zero' : 0 = (2 - 1) * riemannZeta (2 : ℂ) := by
@@ -1294,7 +1294,7 @@ lemma lem_1deltatrho0 (delta : ℝ) (_hdelta : delta > 0) (rho : ℂ) (_h_rho_in
   _ = (1 : ℂ) + delta - rho.re := by ring
   _ = ((1 : ℝ) + delta - rho.re : ℂ) := by norm_cast
 
-lemma lem_1delsigReal (delta : ℝ) (hdelta_pos : delta > 0) (hdelta : delta < 1) (rho : ℂ) (h_rho_in_zeroZ : rho ∈ zeroZ) :
+lemma lem_1delsigReal (delta : ℝ) (hdelta_pos : delta > 0) (_hdelta : delta < 1) (rho : ℂ) (h_rho_in_zeroZ : rho ∈ zeroZ) :
 (1 / ((1 : ℂ) + delta + rho.im * Complex.I - rho)).re = 1 / ((1 : ℝ) + delta - rho.re) := by
   rw [lem_1deltatrho0 delta hdelta_pos rho h_rho_in_zeroZ]
   -- After applying lem_1deltatrho0, we have:
@@ -1309,7 +1309,7 @@ lemma lem_1delsigReal (delta : ℝ) (hdelta_pos : delta > 0) (hdelta : delta < 1
   -- This gives us (1 : ℂ).re / (1 + delta - rho.re) = 1 / (1 + delta - rho.re)
   rw [Complex.ofReal_re]
 
-lemma lem_11delsiginR (delta : ℝ) (hdelta : delta > 0) (hdelta_lt_1 : delta < 1) (sigma : ℝ) (hsigma : sigma ≤ 1) :
+lemma lem_11delsiginR (delta : ℝ) (hdelta : delta > 0) (_hdelta_lt_1 : delta < 1) (sigma : ℝ) (hsigma : sigma ≤ 1) :
 (1 / ((1 : ℂ) + delta - sigma)).im = 0 := by
   -- First show that 1 + delta - sigma is a positive real number
   have h_pos : 1 + delta - sigma > 0 := by
@@ -1333,7 +1333,7 @@ lemma lem_11delsiginR (delta : ℝ) (hdelta : delta > 0) (hdelta_lt_1 : delta < 
   rw [Complex.one_im]
 
   -- 0 divided by anything nonzero is 0
-  simp [ne_of_gt h_pos]
+  simp []
 
 lemma lem_11delsiginR2 (delta : ℝ) (hdelta : delta > 0) (hdelta_lt_1 : delta < 1) (rho : ℂ) (h_rho_in_zeroZ : rho ∈ zeroZ) :
 (1 / ((1 : ℂ) + delta - rho.re)).im = 0 := by
@@ -1520,7 +1520,7 @@ lemma Z1bound :
     have hY_nonneg : 0 ≤ Real.log (abs t + 2) := by
       have h2le : (2 : ℝ) ≤ abs t + 2 := by
         have h0 : 0 ≤ |t| := abs_nonneg t
-        simp [add_comm]
+        simp []
       exact le_of_lt (Real.log_pos (lt_of_lt_of_le (by norm_num) h2le))
     have h_enlarge : C0 * Real.log (abs t + 2) ≤ C * Real.log (abs t + 2) :=
       mul_le_mul_of_nonneg_right hCge hY_nonneg
@@ -1582,7 +1582,7 @@ lemma Z1bound :
     have hY_nonneg : 0 ≤ Real.log (abs t + 2) := by
       have h2le : (2 : ℝ) ≤ abs t + 2 := by
         have h0 : 0 ≤ |t| := abs_nonneg t
-        simp [add_comm]
+        simp []
       exact le_of_lt (Real.log_pos (lt_of_lt_of_le (by norm_num) h2le))
     have hmul1 : (3 / Real.log 4) * Real.log 4 ≤ (3 / Real.log 4) * Real.log (abs t + 2) := by
       have hk_nonneg : 0 ≤ 3 / Real.log 4 := le_of_lt (div_pos (by norm_num) hlog5pos)
@@ -1787,7 +1787,7 @@ lemma log_abs_add_two_ge_of_threshold (K t : ℝ) (ht : Real.exp K - 2 ≤ |t|) 
   exact (Real.le_log_iff_exp_le hxpos).2 hx
 
 lemma re_ofReal_add_ofReal_add (a b : ℝ) (z : ℂ) : (a + b + z).re = a + b + z.re := by
-  simp [Complex.add_re, Complex.ofReal_re, Complex.ofReal_im, add_assoc]
+  simp [Complex.add_re, Complex.ofReal_re, add_assoc]
 
 lemma algebraic_rewrite_RHS (δ s L C0 C1 C2 : ℝ) :
   3 * (1 / δ + C0) + 4 * (-(1 / (1 + δ - s)) + C1 * L) + C2 * L =
@@ -1802,7 +1802,7 @@ lemma algebraic_rewrite_RHS (δ s L C0 C1 C2 : ℝ) :
           = 4 * (-(1 / (1 + δ - s))) + 4 * (C1 * L) := by
             simp [mul_add]
       _ = -(4 * (1 / (1 + δ - s))) + (4 * C1) * L := by
-        simp [mul_neg, mul_comm, mul_left_comm, mul_assoc]
+        simp [mul_comm, mul_assoc]
   calc
     3 * (1 / δ + C0) + 4 * (-(1 / (1 + δ - s)) + C1 * L) + C2 * L
         = (3 * (1 / δ) + 3 * C0) + 4 * (-(1 / (1 + δ - s)) + C1 * L) + C2 * L := by
@@ -1863,7 +1863,7 @@ lemma zeta1zetaseriesxy (x y : ℝ) (hx : 1 < x) :
   -- Need to show 1 < (x + y * I).re
   -- Show that (x + y * I).re = x
   have h : (x + y * I).re = x := by
-    simp [Complex.add_re, Complex.ofReal_re, Complex.mul_I_re, Complex.ofReal_im]
+    simp [Complex.add_re, Complex.ofReal_re, Complex.ofReal_im]
   rw [h]
   exact hx
 
@@ -1902,7 +1902,7 @@ lemma summable_of_support_singleton {α : Type*} [SeminormedAddCommGroup α] (f 
     exact Set.Finite.subset (Set.finite_singleton n₀) h_subset
 
   -- Use the fact that functions with finite support are summable
-  exact summable_of_finite_support h_finite_support
+  exact summable_of_hasFiniteSupport h_finite_support
 
 lemma summable_of_summable_add_sub {α : Type*} [SeminormedAddCommGroup α] (f g h : ℕ → α) (h_eq : f = g + h) (hf : Summable f) (hh : Summable h) : Summable g := by
   -- Since f = g + h, we have g = f - h
@@ -2026,7 +2026,7 @@ lemma LSeriesSummable_to_explicit_summable (x y : ℝ) (_hx : 1 < x) : LSeriesSu
 
   -- vonMangoldt(0) = 0, so we can use LSeries.term_def₀
   have h_vm_zero : (ArithmeticFunction.vonMangoldt 0 : ℂ) = 0 := by
-    simp [ArithmeticFunction.vonMangoldt_apply]
+    simp []
 
   -- Show the functions are pointwise equal
   have h_eq : ∀ n : ℕ, LSeries.term (fun n => (ArithmeticFunction.vonMangoldt n : ℂ)) (x + y * I) n =
@@ -2041,7 +2041,7 @@ lemma LSeriesSummable_to_explicit_summable (x y : ℝ) (_hx : 1 < x) : LSeriesSu
     -- For n ≥ 1, use lem_nxy to split the exponent
     by_cases hn : n = 0
     · -- Case n = 0: both sides are 0
-      simp [hn, h_vm_zero]
+      simp [hn]
     · -- Case n ≠ 0: use lem_nxy to split
       have hn_ge : n ≥ 1 := Nat.one_le_iff_ne_zero.mpr hn
       rw [lem_nxy n hn_ge x y]
@@ -2295,10 +2295,10 @@ lemma norm_negLogDerivZeta_real_eq_abs_tsum_vonMangoldt (x : ℝ) (hx : 1 < x) :
     by_cases h : n = 0
     · -- both sides are zero since vonMangoldt 0 = 0
       have hv0C : (ArithmeticFunction.vonMangoldt 0 : ℂ) = 0 := by
-        simp [ArithmeticFunction.vonMangoldt_apply]
+        simp []
       have hv0R : (ArithmeticFunction.vonMangoldt 0 : ℝ) = 0 := by
-        simp [ArithmeticFunction.vonMangoldt_apply]
-      simp [g, h, hv0C, hv0R]
+        simp []
+      simp [g, h, hv0R]
     · -- n ≥ 1: use the cpow-neg-real identification
       have hn : 1 ≤ n := Nat.one_le_iff_ne_zero.mpr h
       have hcp : (n : ℂ) ^ (-(x : ℂ)) = Complex.ofReal ((n : ℝ) ^ (-x)) :=
@@ -2727,7 +2727,7 @@ lemma Z0boundRe_const3 :
   rwa [h_re_eq] at h
 
 lemma Z341bounds_const :
-  ∃ C > 1, ∀ (δ : ℝ) (hδ : δ > 0) (hδ1 : δ < 1), ∀ t : ℝ, 2 < |t| → ∀ σ : ℝ,
+  ∃ C > 1, ∀ (δ : ℝ) (_hδ : δ > 0) (_hδ1 : δ < 1), ∀ t : ℝ, 2 < |t| → ∀ σ : ℝ,
     (σ + t * Complex.I) ∈ zeroZ →
       3 * (-logDerivZeta ((1 : ℂ) + δ)).re
     + 4 * (-logDerivZeta ((1 : ℂ) + δ + t * Complex.I)).re
@@ -2989,7 +2989,7 @@ lemma lem_seriespos (t : ℝ) (delta : ℝ) (hdelta : delta > 0) :
   intro n
   by_cases h : n = 0
   · -- Case n = 0: von Mangoldt function is 0, so the term is 0
-    simp [h, ArithmeticFunction.vonMangoldt_apply]
+    simp [h]
   · -- Case n ≠ 0: apply lem_Lambda_pos_trig_sum
     have hn : n ≥ 1 := Nat.one_le_iff_ne_zero.mpr h
     exact lem_Lambda_pos_trig_sum n delta t hn hdelta
@@ -3025,7 +3025,7 @@ lemma log_abs_add_two_pos (t : ℝ) : 0 < Real.log (abs t + 2) := by
   have hge : (2 : ℝ) ≤ abs t + 2 := by
     have h' : 0 ≤ abs t := abs_nonneg t
     have := add_le_add_right h' (2 : ℝ)
-    simp [zero_add]
+    simp []
   have hgt : 1 < abs t + 2 := lt_of_lt_of_le (by norm_num : (1 : ℝ) < 2) hge
   -- Apply the positivity criterion for log on nonnegative reals
   exact (Real.log_pos_iff h0).2 hgt
@@ -3087,7 +3087,7 @@ lemma inv_of_delta_def (C L δ : ℝ) (hδ : δ = 1 / (2 * C * L)) : 1 / δ = 2 
 lemma rhs_eval_of_inv (C L δ : ℝ) (h : 1 / δ = 2 * C * L) : 3 / δ + C * L = 7 * C * L := by
   calc
     3 / δ + C * L
-        = 3 * (1 / δ) + C * L := by simp [div_eq_mul_inv, one_div]
+        = 3 * (1 / δ) + C * L := by simp [div_eq_mul_inv]
     _   = 3 * (2 * C * L) + C * L := by simp [h]
     _   = 6 * C * L + C * L := by ring
     _   = 7 * C * L := by ring
@@ -3178,7 +3178,7 @@ lemma zeta_zero_re_lt_one (s : ℂ) (hs : s ∈ zeroZ) : s.re < 1 := by
   -- Proof by contradiction
   by_contra h
   -- h : ¬s.re < 1, which means s.re ≥ 1
-  push_neg at h
+  push Not at h
   -- Since s ∈ zeroZ, zeroZ should be the set of zeros, so riemannZeta s = 0
   -- This should follow from the definition of zeroZ as the zero set
   have h_zero : riemannZeta s = 0 := hs
@@ -3447,7 +3447,7 @@ lemma lem_delta19 :
     -- Use deltaz_t t = deltaz (t * Complex.I) and |(t * Complex.I).im| = |t|
     have h_eq : deltaz_t t = deltaz (t * Complex.I) := rfl
     rw [h_eq]
-    have h_im_eq : |(t * Complex.I).im| = |t| := by simp [Complex.mul_I_im]
+    have h_im_eq : |(t * Complex.I).im| = |t| := by simp []
     rw [← h_im_eq] at ht
     exact h_complex (t * Complex.I) ht
 
@@ -3557,7 +3557,7 @@ lemma riemannZeta_zeros_finite_of_compact (K : Set ℂ) (hK : IsCompact K) :
 
   -- Suppose for contradiction that the set of zeros is infinite
   by_contra h_not_finite
-  push_neg at h_not_finite
+  push Not at h_not_finite
 
   -- Let Z be the set of zeros in K
   let Z := {z ∈ K | riemannZeta z = 0}
@@ -3675,7 +3675,7 @@ lemma lem_ZFRdelta :
     have := mul_le_mul_of_nonneg_right hcoef_le1 ha_nonneg
     simpa [one_mul] using this
   have h9d_eq : 9 * deltaz z = ((9 : ℝ) / 20) * (zerofree_constant / L) := by
-    simp [deltaz, hLdef, div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc]
+    simp [deltaz, hLdef, div_eq_mul_inv, mul_left_comm, mul_assoc]
   have hdelta_le : 9 * deltaz z ≤ zerofree_constant / L := by
     simpa [h9d_eq] using hb_le_a'
   have h_le_rhs : 1 - zerofree_constant / L ≤ 1 - 9 * deltaz z := by
@@ -3692,20 +3692,20 @@ lemma complex_re_add_I_mul_real (a t : ℝ) : (((a : ℂ) + Complex.I * t).re) =
   have h1 : ((Complex.I * (t : ℂ)).re) = -((t : ℂ).im) := by
     simp
   have ht_im : ((t : ℂ).im) = 0 := by simp
-  simp [Complex.add_re, Complex.ofReal_re, h1, ht_im]
+  simp [Complex.add_re, Complex.ofReal_re, h1]
 
 lemma complex_im_add_I_mul_real (a t : ℝ) : (((a : ℂ) + Complex.I * t).im) = t := by
   -- im((a:ℂ) + I * t) = im(I * t) and im(I * t) = re(t) = t
   have h1 : ((Complex.I * (t : ℂ)).im) = ((t : ℂ).re) := by
     simp
   have ht_re : ((t : ℂ).re) = t := by simp
-  simp [Complex.add_im, Complex.ofReal_im, h1, ht_re]
+  simp [Complex.add_im, Complex.ofReal_im, h1]
 
 lemma complex_sub_ofReal_I_real_eq_ofReal (z : ℂ) (a t : ℝ) (him : z.im = t) :
   z - ((a : ℂ) + Complex.I * t) = ((z.re - a) : ℂ) := by
   apply Complex.ext
-  · simp [Complex.sub_re, Complex.add_re, Complex.ofReal_re, Complex.I_mul_re, Complex.ofReal_im]
-  · simp [Complex.sub_im, Complex.add_im, Complex.ofReal_im, Complex.ofReal_re, Complex.I_mul_im, him]
+  · simp [Complex.sub_re, Complex.add_re, Complex.ofReal_re, Complex.ofReal_im]
+  · simp [Complex.sub_im, Complex.add_im, Complex.ofReal_im, Complex.ofReal_re, him]
 
 lemma lem_ZFRinD (t : ℝ) (ht : |t| > 2) (z : ℂ) :
     let c := (3/2 : ℂ) + I * t
@@ -3864,7 +3864,7 @@ lemma lem_Rerhotodeltarho {ρ : ℂ} :
         have : |(ρ - (3/2 + t * Complex.I)).im| ≤ ‖ρ - (3/2 + t * Complex.I)‖ :=
           Complex.abs_im_le_norm _
         have h_im_eq : (ρ - (3/2 + t * Complex.I)).im = ρ.im - t := by
-          simp [Complex.sub_im, Complex.add_im, Complex.ofReal_im, Complex.mul_I_im]
+          simp [Complex.sub_im, Complex.add_im, Complex.ofReal_im]
         rwa [← h_im_eq]
       rw [← Complex.dist_eq] at h_le_norm
       linarith [h_le_norm, h_dist]
@@ -3905,7 +3905,7 @@ lemma lem_DImt2d :
   -- z is in the closed ball, so ‖z - (3/2 + t * Complex.I)‖ ≤ 5/6
   rw [Metric.mem_closedBall] at hz
   -- The center has imaginary part t
-  have center_im : (3/2 + t * Complex.I).im = t := by simp [Complex.add_im, Complex.one_im, Complex.mul_im]
+  have center_im : (3/2 + t * Complex.I).im = t := by simp [Complex.add_im, Complex.mul_im]
   -- So (z - center).im = z.im - t
   have diff_im : (z - (3/2 + t * Complex.I)).im = z.im - t := by
     rw [Complex.sub_im, center_im]
@@ -4003,12 +4003,12 @@ lemma lem_Ddt2dz :
   calc
     deltaz_t t
         = (zerofree_constant / 20) / Real.log (|t| + 2) := by
-            simp [deltaz_t, deltaz, Complex.mul_I_im]
+            simp [deltaz_t, deltaz]
     _ = (zerofree_constant / 20) * (1 / Real.log (|t| + 2)) := by simp [div_eq_mul_inv]
     _ ≤ (zerofree_constant / 20) * (3 / Real.log (|z.im| + 2)) := h2
     _ = 3 * ((zerofree_constant / 20) * (1 / Real.log (|z.im| + 2))) := by
-            simp [div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc]
-    _ = 3 * deltaz z := by simp [deltaz, div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc]
+            simp [div_eq_mul_inv, mul_left_comm, mul_assoc]
+    _ = 3 * deltaz z := by simp [deltaz, div_eq_mul_inv, mul_left_comm, mul_assoc]
 
 lemma lem_deltarhotodeltat (t : ℝ) (ht : |t| > 3) (ρ : ℂ) :
     let c := (3/2 : ℂ) + I * t
@@ -4057,9 +4057,7 @@ lemma lem_RezRerho (t : ℝ) (ht : |t| > 3) (z ρ : ℂ) :
     ρ ∈ (zerosetKfRc (5 / (6 : ℝ)) c riemannZeta) →
     1 - deltaz_t t ≤ z.re ∧ z.re ≤ 3/2 ∧ z.im = t →
     z.re - ρ.re ≥ 2 * deltaz_t t := by
-  intro c  -- introduce the let binding
-  intro h_rho_mem  -- introduce the membership hypothesis
-  intro h_z  -- introduce the z conditions
+  intro c h_rho_mem h_z
   -- Use lem_Rerhotodeltat to get upper bound on ρ.re
   have h_rho_bound := lem_Rerhotodeltat t ht ρ h_rho_mem
   -- Extract lower bound on z.re from hypothesis
@@ -4160,7 +4158,7 @@ lemma lem_m_rho_zeta_nat (t : ℝ) (ht : |t| > 3) (ρ : ℂ) :
   refine ⟨(analyticOrderAt riemannZeta ρ).toNat, ?_⟩
   simpa using (ENat.coe_toNat hfinite).symm
 
-lemma lem_finiteKzeta (t : ℝ) (ht : |t| > 3) :
+lemma lem_finiteKzeta (t : ℝ) (_ht : |t| > 3) :
     let c := (3/2 : ℂ) + I * t
     (zerosetKfRc (5 / (6 : ℝ)) c riemannZeta).Finite := by
   intro c
@@ -4169,7 +4167,7 @@ lemma lem_finiteKzeta (t : ℝ) (ht : |t| > 3) :
   simpa [zerosetKfRc] using
     (riemannZeta_zeros_finite_of_compact (Metric.closedBall c (5 / (6 : ℝ))) hK)
 
-lemma lem_triangle_ZFR (t : ℝ) (ht : |t| > 3) (z : ℂ) :
+lemma lem_triangle_ZFR (t : ℝ) (_ht : |t| > 3) (z : ℂ) :
     let c := (3/2 : ℂ) + I * t
     ∀ (hfin : (zerosetKfRc (5 / (6 : ℝ)) c riemannZeta).Finite),
     1 - deltaz_t t ≤ z.re ∧ z.re ≤ 3/2 ∧ z.im = t →
@@ -4252,7 +4250,7 @@ lemma lem_sumK1abs (t : ℝ) (ht : |t| > 3) (z : ℂ) :
 
 lemma helper_analyticOnNhd_shift_div (f : ℂ → ℂ) (c : ℂ)
     (h : ∀ z ∈ Metric.closedBall c 1, AnalyticAt ℂ f z)
-    (hc : f c ≠ 0) :
+    (_hc : f c ≠ 0) :
     AnalyticOnNhd ℂ (fun z => f (z + c) / f c) (Metric.closedBall (0 : ℂ) 1) := by
   -- Unfold the definition of AnalyticOnNhd on a set: pointwise AnalyticAt on the set
   intro z hz
@@ -4272,16 +4270,16 @@ lemma helper_analyticOnNhd_shift_div (f : ℂ → ℂ) (c : ℂ)
     analyticAt_id.add analyticAt_const
   -- Therefore, the composition z ↦ f (z + c) is analytic at z
   have h_comp : AnalyticAt ℂ (fun w => f (w + c)) z :=
-    (AnalyticAt.comp' h_f_at h_addc)
+    (AnalyticAt.fun_comp h_f_at h_addc)
   -- Multiplication by the constant (1 / f c) is analytic; hence division by f c is analytic
   have h_mul_const : AnalyticAt ℂ (fun w => (1 / f c) * f (w + c)) z :=
     (analyticAt_const.mul h_comp)
   -- Rewrite to the desired form
   simpa [div_eq_mul_inv, mul_comm] using h_mul_const
 
-lemma helper_finite_zeros_shift (r : ℝ) (hr : r > 0) (c : ℂ) (f : ℂ → ℂ)
+lemma helper_finite_zeros_shift (r : ℝ) (_hr : r > 0) (c : ℂ) (f : ℂ → ℂ)
     (hc : f c ≠ 0)
-    (h_analytic : AnalyticOnNhd ℂ f (Metric.closedBall c 1))
+    (_h_analytic : AnalyticOnNhd ℂ f (Metric.closedBall c 1))
     (hfin : (zerosetKfRc r c f).Finite) :
     (zerosetKfRc r (0 : ℂ) (fun z => f (z + c) / f c)).Finite :=
 by
@@ -4321,7 +4319,7 @@ by
     hfin.image (fun ρ : ℂ => ρ - c)
   simpa [g, hEq] using himage
 
-lemma helper_bound_shifted (B R : ℝ) (hB : 1 < B) (hRpos : 0 < R) (hRlt1 : R < 1)
+lemma helper_bound_shifted (B R : ℝ) (_hB : 1 < B) (_hRpos : 0 < R) (_hRlt1 : R < 1)
     (c : ℂ) (f : ℂ → ℂ) (hc : f c ≠ 0)
     (h_bound : ∀ z ∈ Metric.closedBall c R, ‖f z‖ ≤ B) :
     ∀ z ∈ Metric.closedBall (0 : ℂ) R,
@@ -4363,7 +4361,7 @@ lemma helper_sum_nonneg_nat (ι : Type*) (s : Finset ι) (f : ι → ℕ) :
     exact_mod_cast (Nat.zero_le (f i))
   simpa using Finset.sum_nonneg h
 
-lemma helper_one_le_Bdivfc2 (B R : ℝ) (hB : 1 < B) (hRpos : 0 < R) (hRlt1 : R < 1)
+lemma helper_one_le_Bdivfc2 (B R : ℝ) (_hB : 1 < B) (hRpos : 0 < R) (_hRlt1 : R < 1)
   (f : ℂ → ℂ) (c : ℂ) (hc : f c ≠ 0)
   (h_bound : ∀ z ∈ Metric.closedBall c R, ‖f z‖ ≤ B) :
   1 ≤ B / ‖f c‖ :=
@@ -4483,7 +4481,7 @@ by
         simpa [φ, dist_eq_norm] using (by simpa [dist_eq_norm] using hdist_le)
       simpa [Metric.mem_closedBall] using this
     have hρ'_gzero : g' (φ ρ) = 0 := by
-      simp [g', φ, hc, hρ_fzero, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
+      simp [g', φ, hρ_fzero, sub_eq_add_neg, add_comm]
     have hρ'_mem : (φ ρ) ∈ zerosetKfRc r (0 : ℂ) g' := ⟨hρ'_ball, hρ'_gzero⟩
     -- Apply fc_m_order to equate multiplicities
     have h_m_eq := fc_m_order r hr c f hc h_analytic (ρ' := φ ρ) hρ'_mem
@@ -4797,7 +4795,7 @@ lemma lem_sum_m_rho_bound_c (B R R1 : ℝ) (hB : 1 < B)
     exact this
 
 lemma lem_sum_m_rho_zeta :
-    ∃ C_2 > 1, ∀ (t : ℝ) (ht : |t| > 3),
+    ∃ C_2 > 1, ∀ (t : ℝ) (_ht : |t| > 3),
     let c := (3/2 : ℂ) + I * t;
     ∀ (hfin : (zerosetKfRc (5 / (6 : ℝ)) c riemannZeta).Finite),
       ∑ ρ ∈ hfin.toFinset, ((analyticOrderAt riemannZeta ρ).toNat : ℝ) ≤ C_2 * Real.log |t| := by
@@ -4946,7 +4944,7 @@ lemma lem_sum_m_rho_zeta :
   exact le_trans hfinal hscale
 
 lemma lem_sumKdeltatlogt :
-  ∃ C_3 > 1, ∀ (t : ℝ) (ht : |t| > 3),
+  ∃ C_3 > 1, ∀ (t : ℝ) (_ht : |t| > 3),
   let c := (3/2 : ℂ) + I * t;
   ∀ (hfin : (zerosetKfRc (5 / (6 : ℝ)) c riemannZeta).Finite),
     ∀ z : ℂ, 1 - deltaz_t t ≤ z.re ∧ z.re ≤ 3/2 ∧ z.im = t →
@@ -4999,7 +4997,7 @@ lemma lem_sumKdeltatlogt :
               apply mul_le_mul_of_nonneg_right (by norm_num : (1 : ℝ) ≤ 2) (le_of_lt h_delta_pos)
 
 lemma lem_sumKlogt2 :
-  ∃ C_4 > 1, ∀ (t : ℝ) (ht : |t| > 3),
+  ∃ C_4 > 1, ∀ (t : ℝ) (_ht : |t| > 3),
   let c := (3/2 : ℂ) + I * t
   ∀ (hfin : (zerosetKfRc (5 / (6 : ℝ)) c riemannZeta).Finite),
     ∀ z : ℂ, 1 - deltaz_t t ≤ z.re ∧ z.re ≤ 3/2 ∧ z.im = t →
@@ -5035,7 +5033,7 @@ lemma lem_sumKlogt2 :
 
     -- Use the definition of deltaz_t to bound the key ratio
     have h_deltaz_eq : deltaz_t t = (zerofree_constant / 20) / Real.log (|t| + 2) := by
-      simp [deltaz_t, deltaz, Complex.mul_I_im]
+      simp [deltaz_t, deltaz]
 
     -- The key insight: bound C_3 / deltaz_t t * log|t| using the definition and log bound
     have h_main_bound : C_3 / deltaz_t t * Real.log |t| ≤
@@ -5079,7 +5077,7 @@ lemma lem_sumKlogt2 :
 
 lemma lem_logDerivZetalogt0 :
   ∃ C > 1,
-  ∀ (t : ℝ) (ht : |t| > 3),
+  ∀ (t : ℝ) (_ht : |t| > 3),
     ∀ s : ℂ, (1 - deltaz_t t) ≤ s.re ∧ s.re ≤ 3/2 ∧ s.im = t →
       ‖deriv riemannZeta s / riemannZeta s‖ ≤ C * Real.log |t|^2 := by
   -- Apply the two main lemmas as stated in the informal proof
@@ -5143,7 +5141,7 @@ lemma lem_logDerivZetalogt0 :
 lemma lem_logDerivZetalogt2 :
   ∃ A: ℝ, A > 0 ∧ A < 1 ∧
   ∃ C > 1,
-  ∀ (t : ℝ) (ht : |t| > 3),
+  ∀ (t : ℝ) (_ht : |t| > 3),
     ∀ s : ℂ, (1 - A / Real.log (abs t + 2) ≤ s.re ∧ s.re ≤ 3/2 ∧ s.im = t) →
       ‖deriv riemannZeta s / riemannZeta s‖ ≤ C * Real.log |t|^2 := by
   obtain ⟨C, hC_gt, hC_bound⟩ := lem_logDerivZetalogt0
@@ -5302,7 +5300,7 @@ lemma helper_one_div_log_le_two_div_smallball (t : ℝ) (ht : |t| > 3) (z : ℂ)
   have h_norm : ‖z - (1 - deltaz_t t + t * Complex.I)‖ ≤ 2 * deltaz_t t := by
     simpa [Metric.mem_closedBall, Complex.dist_eq] using hz
   have center_im : (1 - deltaz_t t + t * Complex.I).im = t := by
-    simp [Complex.add_im, Complex.mul_I_im]
+    simp [Complex.add_im]
   have diff_im : (z - (1 - deltaz_t t + t * Complex.I)).im = z.im - t := by
     simp [Complex.sub_im, center_im]
   have h1 : |z.im - t| ≤ ‖z - (1 - deltaz_t t + t * Complex.I)‖ := by
@@ -5370,7 +5368,7 @@ lemma helper_deltaz_t_le_two_deltaz_smallball (t : ℝ) (ht : |t| > 3) (z : ℂ)
   calc
     deltaz_t t
         = (zerofree_constant / 20) / Real.log (|t| + 2) := by
-              simp [deltaz_t, deltaz, Complex.mul_I_im]
+              simp [deltaz_t, deltaz]
     _ = (zerofree_constant / 20) * (1 / Real.log (|t| + 2)) := by
               simp [div_eq_mul_inv]
     _ ≤ (zerofree_constant / 20) * (2 / Real.log (|z.im| + 2)) := by
@@ -5576,7 +5574,7 @@ lemma abs_le_add_of_abs_sub_le {a b ε : ℝ} (h : |a - b| ≤ ε) :
   |a| ≤ |b| + ε := by
   calc
     |a| = |b + (a - b)| := by
-      simp [sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
+      simp [sub_eq_add_neg, add_left_comm]
     _ ≤ |b| + |a - b| := by
       simpa [sub_eq_add_neg] using abs_add_le b (a - b)
     _ ≤ |b| + ε := by
@@ -5680,7 +5678,7 @@ lemma abs_le_add_of_abs_sub_le' {a b ε : ℝ} (h : |a - b| ≤ ε) :
   |a| ≤ |b| + ε := by
   calc
     |a| = |b + (a - b)| := by
-      simp [sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
+      simp [sub_eq_add_neg, add_left_comm]
     _ ≤ |b| + |a - b| := by
       simpa [sub_eq_add_neg] using abs_add_le b (a - b)
     _ ≤ |b| + ε := by
@@ -5933,7 +5931,7 @@ lemma norm_div_cast_vonMangoldt (s : ℂ) :
   (fun n : ℕ => ‖(ArithmeticFunction.vonMangoldt n : ℂ) / ((n : ℂ) ^ s)‖)
   = (fun n : ℕ => (|ArithmeticFunction.vonMangoldt n|) / ‖(n : ℂ) ^ s‖) := by
   funext n
-  simp [norm_div, Complex.norm_real, Real.norm_eq_abs]
+  simp [Complex.norm_real, Real.norm_eq_abs]
 
 lemma ArithmeticFunction.summable_vonMangoldt_norm_rw {s : ℂ} :
   Summable (fun n : ℕ => ‖(ArithmeticFunction.vonMangoldt n : ℂ) / ((n : ℂ) ^ s)‖)
@@ -5943,8 +5941,8 @@ lemma ArithmeticFunction.summable_vonMangoldt_norm_rw {s : ℂ} :
       (fun n : ℕ => ‖(ArithmeticFunction.vonMangoldt n : ℂ) / ((n : ℂ) ^ s)‖)
         = (fun n : ℕ => (|ArithmeticFunction.vonMangoldt n|) / ‖(n : ℂ) ^ s‖) := by
     funext n
-    simp [norm_div, Complex.norm_real, div_eq_mul_inv]
-  simp [hfun]
+    simp [Complex.norm_real, div_eq_mul_inv]
+  simp []
 
 lemma lem_norm_cpow_nat (n : ℕ) (s : ℂ) (hn : 1 ≤ n) : ‖(n : ℂ) ^ s‖ = (n : ℝ) ^ s.re := by
   have hpos : 0 < (n : ℝ) :=
@@ -5954,7 +5952,7 @@ lemma lem_norm_cpow_nat (n : ℕ) (s : ℂ) (hn : 1 ≤ n) : ‖(n : ℂ) ^ s‖
 lemma lem_vonMangoldt_nonneg (n : ℕ) : 0 ≤ (ArithmeticFunction.vonMangoldt n) := by
   simp
 
-lemma lem_term_real_nonneg (n : ℕ) (σ : ℝ) (hσ : 1 < σ) : ∃ r ≥ (0:ℝ), ((ArithmeticFunction.vonMangoldt n : ℂ) / ((n : ℂ) ^ (σ : ℂ))) = (r : ℂ) := by
+lemma lem_term_real_nonneg (n : ℕ) (σ : ℝ) (_hσ : 1 < σ) : ∃ r ≥ (0:ℝ), ((ArithmeticFunction.vonMangoldt n : ℂ) / ((n : ℂ) ^ (σ : ℂ))) = (r : ℂ) := by
   -- Define the real number r to be the real quotient
   let r : ℝ := (ArithmeticFunction.vonMangoldt n) / ((n : ℝ) ^ σ)
   refine ⟨r, ?_, ?_⟩
@@ -5980,7 +5978,7 @@ lemma lem_term_real_nonneg (n : ℕ) (σ : ℝ) (hσ : 1 < σ) : ∃ r ≥ (0:�
               simp
       _ = (r : ℂ) := by rfl
 
-lemma lem_tsum_norm_vonMangoldt_depends_on_Re (s : ℂ) (σ : ℝ) (hσ : σ = s.re) (hs : 1 < s.re) :
+lemma lem_tsum_norm_vonMangoldt_depends_on_Re (s : ℂ) (σ : ℝ) (hσ : σ = s.re) (_hs : 1 < s.re) :
   (∑' n : ℕ, ‖(ArithmeticFunction.vonMangoldt n : ℂ) / ((n : ℂ) ^ s)‖) =
   (∑' n : ℕ, ‖(ArithmeticFunction.vonMangoldt n : ℂ) / ((n : ℂ) ^ (σ : ℂ))‖) := by
   classical
@@ -5991,7 +5989,7 @@ lemma lem_tsum_norm_vonMangoldt_depends_on_Re (s : ℂ) (σ : ℝ) (hσ : σ = s
     by_cases h0 : n = 0
     · -- At n = 0 the numerator is zero so both sides are zero
       subst h0
-      simp [ArithmeticFunction.vonMangoldt, norm_div]
+      simp [ArithmeticFunction.vonMangoldt]
     · -- For n ≥ 1, the base (n:ℂ) has argument 0, so the norm only depends on the real part
       have hn0C : (n : ℂ) ≠ 0 := by
         exact_mod_cast (Nat.cast_ne_zero.mpr h0)
@@ -6006,7 +6004,7 @@ lemma lem_tsum_norm_vonMangoldt_depends_on_Re (s : ℂ) (σ : ℝ) (hσ : σ = s
       have hden_σ : ‖(n : ℂ) ^ (σ : ℂ)‖ = ‖(n : ℂ)‖ ^ σ := by
         simp
       -- Conclude by rewriting both sides
-      simp [norm_div, hden_s, hden_σ, hσ]
+      simp [hden_s, hσ]
   -- Apply congruence of tsums under pointwise equality
   have htsum := congrArg (fun f : ℕ → ℝ => (∑' n, f n)) hfun
   simpa using htsum
@@ -6028,7 +6026,7 @@ lemma helper_summable_of_summable_norm {u : ℕ → ℂ}
   simpa using (Summable.of_norm (f := u) h)
 
 lemma helper_norm_tsum_eq_tsum_norm_of_nonneg_real {u : ℕ → ℂ} {r : ℕ → ℝ}
-  (h : ∀ n, u n = (r n : ℂ)) (hr : ∀ n, 0 ≤ r n) (hu : Summable u) :
+  (h : ∀ n, u n = (r n : ℂ)) (hr : ∀ n, 0 ≤ r n) (_hu : Summable u) :
   ‖(∑' n, u n)‖ = ∑' n, ‖u n‖ := by
   classical
   -- Relate the complex sum to the real sum via ofReal
@@ -6041,7 +6039,7 @@ lemma helper_norm_tsum_eq_tsum_norm_of_nonneg_real {u : ℕ → ℂ} {r : ℕ �
     simp [Real.norm_eq_abs]
   -- Compute the left side as |∑ r n|
   have hLHS : ‖∑' n, u n‖ = |∑' n, r n| := by
-    simp [hrewrite_u, hsum_eq_ofReal, hnorm_abs]
+    simp [hrewrite_u, hsum_eq_ofReal]
   -- Since r n ≥ 0, the sum is nonnegative, so abs is redundant
   have hsum_nonneg : 0 ≤ ∑' n, r n := tsum_nonneg hr
   have habs_sum : |∑' n, r n| = ∑' n, r n := abs_of_nonneg hsum_nonneg
@@ -6123,13 +6121,13 @@ lemma lem_tsum_norm_vonMangoldt_depends_on_Re_cast (s : ℂ) (σ : ℝ)
       Complex.norm_natCast_cpow_of_re_ne_zero n (by simpa [Complex.ofReal_re] using hσ_ne_zero)
     calc
       ‖(((ArithmeticFunction.vonMangoldt n : ℝ) : ℂ)) / ((n : ℂ) ^ s)‖
-          = ‖(((ArithmeticFunction.vonMangoldt n : ℝ) : ℂ))‖ / ‖(n : ℂ) ^ s‖ := by simp [norm_div]
+          = ‖(((ArithmeticFunction.vonMangoldt n : ℝ) : ℂ))‖ / ‖(n : ℂ) ^ s‖ := by simp []
       _ = |ArithmeticFunction.vonMangoldt n| / ((n : ℝ) ^ s.re) := by
             simp [hden_s, Complex.norm_real]
       _ = |ArithmeticFunction.vonMangoldt n| / ((n : ℝ) ^ σ) := by simp [hσ]
       _ = ‖(((ArithmeticFunction.vonMangoldt n : ℝ) : ℂ))‖ / ‖(n : ℂ) ^ (σ : ℂ)‖ := by
             simp [hden_σ, Complex.ofReal_re, Complex.norm_real]
-      _ = ‖(((ArithmeticFunction.vonMangoldt n : ℝ) : ℂ)) / ((n : ℂ) ^ (σ : ℂ))‖ := by simp [norm_div]
+      _ = ‖(((ArithmeticFunction.vonMangoldt n : ℝ) : ℂ)) / ((n : ℂ) ^ (σ : ℂ))‖ := by simp []
   simpa using congrArg (fun f : ℕ → ℝ => ∑' n, f n) hterm
 
 lemma helper_norm_neg_logDeriv_eq_tsum_norm (σ : ℝ) (hσ : 1 < σ) :
@@ -6314,7 +6312,7 @@ lemma lem_logDerivZetalogt32 :
     have : 1 / ‖(δ : ℂ)‖ ≤ 2 := by simpa [hnorm_ofReal] using hone_div_abs_le_two
     -- rewrite ‖1/(δ:ℂ)‖ via hnorm_div
     have hnorm_div' : ‖(1 / (δ : ℂ))‖ = 1 / ‖(δ : ℂ)‖ := by
-      simp [norm_one]
+      simp []
     simpa [hnorm_div'] using this
   -- Combine: first use the triangle inequality, then the Z0 bound, then the bound on ‖1/δ‖
   have h_real_axis_bound : ‖logDerivZeta ((1 : ℂ) + δ)‖ ≤ C0 + 2 := by
@@ -6327,7 +6325,7 @@ lemma lem_logDerivZetalogt32 :
     simpa [norm_neg] using h2
   -- Rewrite ((1:ℂ)+δ) as σ
   have hσ_real : (1 : ℝ) + δ = σ := by
-    simp [δ, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
+    simp [δ, sub_eq_add_neg, add_left_comm]
   have hσ_eq : (1 : ℂ) + δ = (σ : ℂ) := by
     have : ((1 + δ : ℝ) : ℂ) = (σ : ℂ) := by simpa using congrArg Complex.ofReal hσ_real
     simpa [Complex.ofReal_add] using this
@@ -6376,7 +6374,7 @@ theorem thm_final_result :
     -- Key insight: A / Real.log (abs t + 2) = deltaz_t t when A = zerofree_constant / 20
     have h_eq : zerofree_constant / 20 / Real.log (abs t + 2) = deltaz_t t := by
       unfold deltaz_t deltaz
-      simp [Complex.mul_I_im]
+      simp []
 
     -- So the condition becomes σ ≥ 1 - deltaz_t t
     have hσ' : σ ≥ 1 - deltaz_t t := by
@@ -6411,7 +6409,7 @@ theorem thm_final_result :
           apply mul_le_mul_of_nonneg_right hC_le (sq_nonneg _)
 
     · -- Case σ < 3/2: use lem_logDerivZetalogt0
-      push_neg at h
+      push Not at h
       have h_conditions : 1 - deltaz_t t ≤ σ ∧ σ ≤ 3/2 ∧ t = t := by
         exact ⟨hσ', le_of_lt h, rfl⟩
       have bound := hC₀ t ht ⟨σ, t⟩ h_conditions
