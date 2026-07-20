@@ -1,4 +1,4 @@
-import PrimeNumberTheoremAnd.ZetaBounds
+import StrongPNT.PrimeNumberTheoremAnd.ZetaBounds
 import StrongPNT.PNT3_RiemannZeta
 open Complex Topology Filter Interval Set Asymptotics
 
@@ -57,11 +57,13 @@ lemma Z0bound_aux :
   -- `h_comp` is `IsBigO (nhdsWithin 0 (Ioi 0)) (F ∘ u) ( (fun _ => 1) ∘ u )`.
   -- This is equivalent to the goal.
   convert h_comp using 1
-  ext delta
-  -- Unfold definitions to show the functions are the same.
-  simp only [F, u, Function.comp_apply, Pi.neg_apply, Pi.sub_apply, Pi.div_apply]
-  rw [inv_eq_one_div]
-  aesop
+  · ext delta
+    -- Unfold definitions to show the functions are the same.
+    simp only [F, u, Function.comp_apply, Pi.neg_apply, Pi.sub_apply, Pi.div_apply]
+    rw [inv_eq_one_div]
+    aesop
+  · ext delta
+    simp only [Function.comp_apply, Pi.one_apply]
 
 
 lemma Z0bound :

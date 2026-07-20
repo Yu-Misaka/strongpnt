@@ -7,18 +7,18 @@ import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
 import Mathlib.Analysis.Calculus.Deriv.Basic
 import Mathlib.NumberTheory.LSeries.RiemannZeta
 import Mathlib.Algebra.Group.Basic
-import PrimeNumberTheoremAnd.ResidueCalcOnRectangles
-import PrimeNumberTheoremAnd.MellinCalculus
+import StrongPNT.PrimeNumberTheoremAnd.ResidueCalcOnRectangles
+import StrongPNT.PrimeNumberTheoremAnd.MellinCalculus
 import Mathlib.MeasureTheory.Function.Floor
 import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.NumberTheory.Harmonic.Bounds
 import Mathlib.MeasureTheory.Order.Group.Lattice
-import PrimeNumberTheoremAnd.Mathlib.Analysis.SpecialFunctions.Log.Basic
+import StrongPNT.PrimeNumberTheoremAnd.Mathlib.Analysis.SpecialFunctions.Log.Basic
 import Mathlib.Tactic.Bound
 import Mathlib.NumberTheory.LSeries.PrimesInAP
-import Mathlib.Tactic.FunProp.Differentiable
-import PrimeNumberTheoremAnd.Fourier
-import PrimeNumberTheoremAnd.ZetaBounds
+import Mathlib.Tactic.FunProp
+import StrongPNT.PrimeNumberTheoremAnd.Fourier
+import StrongPNT.PrimeNumberTheoremAnd.ZetaBounds
 
 set_option lang.lemmaCmd true
 open Complex Topology Filter Interval Set Asymptotics
@@ -60,6 +60,7 @@ for all $|t| \leq T$ and $\sigma' \ge \sigma$.
 \end{lemma}
 %%-/
 
+set_option maxRecDepth 4000 in
 lemma ZetaNoZerosInBox' (T : ℝ) :
     ∃ (σ : ℝ) (_ : σ < 1), ∀ (t : ℝ) (_ : |t| ≤ T)
     (σ' : ℝ) (_ : σ' ≥ σ), ζ (σ' + t * I) ≠ 0 := by
@@ -85,7 +86,7 @@ lemma ZetaNoZerosInBox' (T : ℝ) :
 
   have σTo1 : Filter.Tendsto σ' Filter.atTop (𝓝 1) := by
     use sub_zero (1: ℝ)▸tendsto_order.2 ⟨fun A B=>? _,fun A B=>?_⟩
-    · apply(((tendsto_inverse_atTop_nhds_zero_nat.comp (Filter.tendsto_add_atTop_nat (1))).congr (by norm_num)).const_sub 1).eventually_const_lt B|>.mono (hσ'_ge ·|>.trans_lt')
+    · apply(((tendsto_inv_atTop_nhds_zero_nat.comp (Filter.tendsto_add_atTop_nat (1))).congr (by norm_num)).const_sub 1).eventually_const_lt B|>.mono (hσ'_ge ·|>.trans_lt')
     · norm_num[(hσ'_le _).trans_lt, B.trans_le']
 
   have : ∃ (t₀ : ℝ) (subseq : ℕ → ℕ),
@@ -118,16 +119,19 @@ lemma ZetaNoZerosInBox' (T : ℝ) :
 
   by_cases ht₀ : t₀ = 0
   · have ZetaBlowsUp : ∀ᶠ s in 𝓝[≠](1 : ℂ), ‖ζ s‖ ≥ 1 := by
-      simp_all[Function.comp_def,eventually_nhdsWithin_iff,norm_eq_sqrt_real_inner]
+      simp_all[Function.comp_def,eventually_nhdsWithin_iff,Complex.norm_def]
       contrapose! h
       simp_all
       delta abs at*
       exfalso
       simp_rw [Metric.nhds_basis_ball.frequently_iff]at*
       choose! I1 A B using h
+      simp only [Metric.mem_ball] at A
+      have A' : ∀ (ε : ℝ), 0 < ε → ‖I1 ε - 1‖ < ε := fun ε hε => by
+        rw [← Complex.dist_eq]; exact A ε hε
       choose a s using exists_seq_strictAnti_tendsto (0: ℝ)
-      apply((isCompact_closedBall _ _).isSeqCompact fun and=>(A _ (s.2.1 and)).le.trans (s.2.2.bddAbove_range.some_mem ⟨and, rfl⟩)).elim
-      use fun and ⟨a, H, S, M⟩=>absurd (tendsto_nhds_unique M (tendsto_sub_nhds_zero_iff.1 (( squeeze_zero_norm fun and=>le_of_lt (A _ (s.2.1 _) ) ) (s.2.2.comp S.tendsto_atTop)))) fun and=>?_
+      apply((isCompact_closedBall _ _).isSeqCompact fun and=>Metric.mem_closedBall.mpr ((A _ (s.2.1 and)).le.trans (s.2.2.bddAbove_range.some_mem ⟨and, rfl⟩))).elim
+      use fun and ⟨a, H, S, M⟩=>absurd (tendsto_nhds_unique M (tendsto_sub_nhds_zero_iff.1 (( squeeze_zero_norm fun and=>le_of_lt (A' _ (s.2.1 _) ) ) (s.2.2.comp S.tendsto_atTop)))) fun and=>?_
       norm_num[*,Function.comp_def] at M
       have:=@riemannZeta_residue_one
       use one_ne_zero (tendsto_nhds_unique (this.comp (tendsto_nhdsWithin_iff.2 ⟨ M,.of_forall (by norm_num[*])⟩)) ( squeeze_zero_norm ?_ ((M.sub_const 1).norm.trans (by rw [sub_self,norm_zero]))))
@@ -148,7 +152,13 @@ lemma ZetaNoZerosInBox' (T : ℝ) :
   · have zetaIsZero : ζ (1 + Complex.I * t₀) = 0 := by
       have cont := @ZetaCont'
       by_contra h
-      use h (isClosed_singleton.isSeqClosed this (.comp (cont.continuousAt.comp (eventually_ne_nhds (by field_simp [ht₀])).mono fun and=>.intro ⟨⟩) (ToOneT0.trans (inf_le_left))))
+      use h (isClosed_singleton.isSeqClosed this (.comp (cont.continuousAt.comp (eventually_ne_nhds (by
+        intro hcontra
+        apply ht₀
+        have hzero : Complex.I * (t₀ : ℂ) = 0 := by linear_combination hcontra
+        rcases mul_eq_zero.mp hzero with hI | ht
+        · exact absurd hI Complex.I_ne_zero
+        · exact Complex.ofReal_eq_zero.mp ht)).mono fun and=>.intro ⟨⟩) (ToOneT0.trans (inf_le_left))))
 
     exact riemannZeta_ne_zero_of_one_le_re (s := 1 + I * t₀) (by simp) zetaIsZero
 
@@ -282,7 +292,9 @@ theorem LogDerivZetaHolcLargeT' :
       _ ≥ 1 - (((1 - σ₁) * Real.log 3 ^ 1)) / Real.log 3 ^ 1:= by
         gcongr
         apply min_le_right
-      _ = _ := by field_simp
+      _ = _ := by
+        rw [mul_div_assoc, div_self (by positivity : Real.log 3 ^ 1 ≠ 0), mul_one]
+        ring
 
 /-%%
 \begin{proof}\uses{ZetaZeroFree}\leanok

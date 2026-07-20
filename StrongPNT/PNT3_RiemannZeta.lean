@@ -87,7 +87,8 @@ theorem tprod_commutes_with_inclusion_infinite {α : Type*} (f : α → ℂˣ) (
 by
   change ((tprod f : ℂˣ) : ℂ) = tprod (fun i ↦ ((f i : ℂˣ) : ℂ))
   have hcont : Continuous (Units.coeHom ℂ) := by
-    simpa using (Units.continuous_val : Continuous (fun u : ℂˣ => ((u : ℂˣ) : ℂ)))
+    change Continuous (fun u : ℂˣ => (u : ℂ))
+    exact Units.continuous_val
   simpa [Units.coeHom] using
     (Multipliable.map_tprod (f := f) (γ := ℂ) h (g := Units.coeHom ℂ) hcont)
 
@@ -119,8 +120,9 @@ lemma lift_multipliable_of_nonzero {P : Type*} (a : P → ℂ) (ha : Multipliabl
   have : Units.mk0 (ι x') (Units.ne_zero x') = x' :=
     Units.mk0_val x' (Units.ne_zero x')
   have this2 : (Units.mk0 (∏ b ∈ b, a b)
-    (Finset.prod_ne_zero_iff.mpr fun a a_1 => h_a_nonzero a)) = x' :=
-      Units.eq_iff.mp (id (Eq.symm x'_spec_eq))
+    (Finset.prod_ne_zero_iff.mpr fun a a_1 => h_a_nonzero a)) = x' := by
+      apply Units.ext
+      exact Eq.symm x'_spec_eq
   rw [Units.mk0_prod] at this2
   rw [←this2]
   conv =>
@@ -317,11 +319,11 @@ lemma abs_term_bound (p : ℙ) (t : ℝ) :
   norm (1 - ((p : ℕ) : ℂ) ^ (-(((3 : ℝ) / 2) + t * Complex.I))) ≤ 1 + ((p : ℕ) : ℝ) ^ (-((3 : ℝ) / 2)) := by
   -- Apply triangle_inequality_specific with z = p^{-(3/2+it)}
   have h1 := triangle_inequality_specific (((p : ℕ) : ℂ) ^ (-(((3 : ℝ) / 2) + t * Complex.I)))
-  -- Apply abs_p_pow_s with s = (3/2 + t*I) to get |p^{-(3/2+it)}| = p^{-Re(3/2+it)}
+  -- Apply abs_p_pow_s with s = (3/2 + t*Complex.I) to get |p^{-(3/2+it)}| = p^{-Re(3/2+it)}
   have h2 := abs_p_pow_s p (((3 : ℝ) / 2) + t * Complex.I)
-  -- Simplify: Re(3/2 + t*I) = 3/2
+  -- Simplify: Re(3/2 + t*Complex.I) = 3/2
   have h3 : (((3 : ℝ) / 2) + t * Complex.I).re = ((3 : ℝ) / 2) := by simp [Complex.add_re, Complex.ofReal_re, Complex.mul_I_re]
-  -- Therefore -Re(3/2 + t*I) = -3/2
+  -- Therefore -Re(3/2 + t*Complex.I) = -3/2
   have h4 : -(((3 : ℝ) / 2) + t * Complex.I).re = -((3 : ℝ) / 2) := by simp [h3]
   -- Substitute into h2
   have h5 : norm (((p : ℕ) : ℂ) ^ (-(((3 : ℝ) / 2) + t * Complex.I))) = ((p : ℕ) : ℝ) ^ (-((3 : ℝ) / 2)) := by
@@ -450,11 +452,6 @@ lemma tendsto_finprod_coe_iff_tendsto_coe_finprod {i : Type*} (f : i → NNReal)
   -- Since the functions are equal, their convergence is equivalent
   rw [h_comp, ← h_eq]
 
-lemma NNReal.isEmbedding_coe : Topology.IsEmbedding (fun x : NNReal => (x : ℝ)) := by
-  refine ⟨?_, NNReal.coe_injective⟩
-  -- NNReal has the subspace topology, so coercion is inducing
-  exact Topology.IsInducing.subtypeVal
-
 lemma HasProd.of_coe_hasProd {i : Type*} (f : i → NNReal) (a : NNReal) (h : HasProd (fun i => (f i : ℝ)) (a : ℝ)) : HasProd f a := by
   -- Use tendsto_finprod_coe_iff_tendsto_coe_finprod to convert h to composition form
   have h_comp : Filter.Tendsto ((fun x : NNReal => (x : ℝ)) ∘ (fun s => ∏ i ∈ s, f i)) Filter.atTop (𝓝 (a : ℝ)) := by
@@ -572,10 +569,14 @@ lemma abs_zeta_inequality (t : ℝ) :
 
   -- Show the equality with original expressions
   have h_eq_f : ∏' p, (f p : ℝ) = ∏' p : ℙ, (1 + ((p : ℕ) : ℝ) ^ (-((3 : ℝ) / 2)))⁻¹ := by
-    simp only [f, NNReal.coe_mk]
+    apply congrArg tprod
+    funext p
+    rfl
 
   have h_eq_g : ∏' p, (g p : ℝ) = ∏' p : ℙ, (norm (1 - ((p : ℕ) : ℂ) ^ (-(((3 : ℝ) / 2) + t * Complex.I))))⁻¹ := by
-    simp only [g, NNReal.coe_mk]
+    apply congrArg tprod
+    funext p
+    rfl
 
   rw [h_eq_f, h_eq_g] at h_convert
   exact h_convert
@@ -609,7 +610,9 @@ lemma abs_zeta_ratio_eval : norm (riemannZeta 3 / riemannZeta ((3 : ℝ) / 2)) =
   have hw_mult : Multipliable w := by
     have hmap : Multipliable ((fun x : ℝ => (x : ℂ)) ∘ u) :=
       Multipliable.map (hf := hu_mult) Complex.ofRealHom Complex.continuous_ofReal
-    simpa [hw_eq] using hmap
+    rw [hw_eq]
+    change Multipliable ((fun x : ℝ => (x : ℂ)) ∘ u)
+    exact hmap
   -- Take absolute values inside the product
   have h_abs_tprod : norm (∏' p : ℙ, w p) = ∏' p : ℙ, norm (w p) :=
     abs_of_tprod w hw_mult
@@ -729,13 +732,15 @@ lemma term_inv_eq_ofRealC (x : ℝ) (n : ℕ) : ((n + 1 : ℂ) ^ (x : ℂ))⁻¹
   simpa using (term_eq_ofRealC x n)
 
 lemma im_tsum_ofReal (g : ℕ → ℝ) : (∑' n : ℕ, (g n : ℂ)).im = 0 := by
-  have him := congrArg Complex.im (Complex.ofReal_tsum (f := g)).symm
+  have him := congrArg Complex.im
+    (Complex.ofReal_tsum (L := SummationFilter.unconditional ℕ) (f := g)).symm
   have hz : (((∑' n : ℕ, g n) : ℝ) : ℂ).im = 0 := by
     simp
   exact Eq.trans him hz
 
 lemma re_tsum_ofReal (g : ℕ → ℝ) : (∑' n : ℕ, (g n : ℂ)).re = ∑' n : ℕ, g n := by
-  have h := congrArg Complex.re (Complex.ofReal_tsum (f := g)).symm
+  have h := congrArg Complex.re
+    (Complex.ofReal_tsum (L := SummationFilter.unconditional ℕ) (f := g)).symm
   simpa [Complex.ofReal_re] using h
 
 lemma zetapos (x : ℝ) (hx : 1 < x) : (riemannZeta x).im = 0 ∧ 0 < (riemannZeta x).re := by
@@ -880,8 +885,8 @@ lemma sum_Icc0_shifted_floor_eq (a : ℕ → ℂ) (t : ℝ) :
 lemma helper_contdiff_differentiable_integrable (f : ℝ → ℂ) (hf : ContDiff ℝ 1 f)
   (a b : ℝ) :
   (∀ t ∈ Set.Icc a b, DifferentiableAt ℝ f t) ∧ IntegrableOn (deriv f) (Set.Icc a b) := by
-  have hdiff : Differentiable ℝ f := hf.differentiable le_rfl
-  have hcont_deriv : Continuous (deriv f) := hf.continuous_deriv le_rfl
+  have hdiff : Differentiable ℝ f := hf.differentiable_one
+  have hcont_deriv : Continuous (deriv f) := hf.continuous_deriv (by norm_num)
   refine And.intro ?hdiffAt ?hint
   · intro t ht
     have hdt : DifferentiableAt ℝ f t := hdiff.differentiableAt
@@ -1085,7 +1090,7 @@ by
       simpa using hcont_at.continuousWithinAt
   have hcont_g : ContinuousOn g (Set.Icc a b) := by
     have hconst : ContinuousOn (fun _ : ℝ => (-s : ℂ)) (Set.Icc a b) := continuousOn_const
-    simpa [g] using hconst.mul hcont_pow
+    simpa only [g] using hconst.fun_mul hcont_pow
   -- On [a,b], the derivative equals g pointwise (by the explicit formula for u>0)
   have hEqOn : EqOn (deriv f) g (Set.Icc a b) := by
     intro u hu
@@ -1114,7 +1119,7 @@ lemma intervalIntegral_congr_of_Ioc_eq (a b : ℝ) (h : a ≤ b)
     refine Filter.Eventually.of_forall ?_;
     intro u hu; exact hpt u hu
   have hIocEmpty : Set.Ioc b a = (∅ : Set ℝ) := by
-    simpa using (Set.Ioc_eq_empty_of_le (a := b) (b := a) h)
+    exact Set.Ioc_eq_empty_of_le h
   have h2 : (∀ᵐ u ∂(MeasureTheory.volume), u ∈ Set.Ioc b a → f u = g u) := by
     refine Filter.Eventually.of_forall ?_;
     intro u hu
@@ -1336,7 +1341,11 @@ lemma helper_aestronglyMeasurable_kernel_Icc (s : ℂ) {a b : ℝ} :
   have h2 : AEStronglyMeasurable (fun u : ℝ => (u : ℂ) ^ (-s - 1)) (volume.restrict (Icc a b)) := by
     have hmeas : Measurable (fun u : ℝ => (u : ℂ) ^ (-s - 1)) := by measurability
     exact hmeas.aestronglyMeasurable
-  simpa using (MeasureTheory.AEStronglyMeasurable.mul h1 h2)
+  change AEStronglyMeasurable
+    ((fun u : ℝ => ((Int.fract u : ℝ) : ℂ)) *
+      (fun u : ℝ => (u : ℂ) ^ (-s - 1)))
+    (volume.restrict (Icc a b))
+  exact h1.mul h2
 
 /-- Helper: `IntervalIntegrable` of the fractional-part kernel on `[a,b]` when `a≥1`. -/
 lemma helper_intervalIntegrable_frac_kernel (s : ℂ) {a b : ℝ} (ha : 1 ≤ a) (hab : a ≤ b) :
@@ -1375,7 +1384,9 @@ lemma helper_intervalIntegrable_frac_kernel (s : ℂ) {a b : ℝ} (ha : 1 ≤ a)
     exact hcont_norm.integrableOn_compact isCompact_Icc
   -- 0 is integrable
   have hf0 : Integrable (fun _ : ℝ => (0 : ℂ)) μ := by simp [μ]
-  have hg : Integrable g μ := by simpa [μ] using hg_int_on
+  have hg : Integrable g μ := by
+    change Integrable g (volume.restrict (Icc a b))
+    exact hg_int_on
   -- use domination to get integrability of f on Icc a b
   have hf : Integrable f μ :=
     MeasureTheory.integrable_of_norm_sub_le (μ := μ) hmeas hf0 hg
@@ -1385,7 +1396,9 @@ lemma helper_intervalIntegrable_frac_kernel (s : ℂ) {a b : ℝ} (ha : 1 ≤ a)
           simpa [sub_eq_add_neg, norm_neg, μ, f, g] using hbound_ae
         simpa using this)
   -- conclude intervalIntegrable on [a,b]
-  have hf_on : IntegrableOn f (Icc a b) := by simpa [μ, f] using hf
+  have hf_on : IntegrableOn f (Icc a b) := by
+    change Integrable f (volume.restrict (Icc a b))
+    exact hf
   simpa using
     (intervalIntegrable_iff_integrableOn_Icc_of_le (μ := volume) (a := a) (b := b)
       (f := f) hab).2 hf_on
@@ -1740,7 +1753,8 @@ lemma helper_tendsto_nat_rpow_neg (ε : ℝ) (hε : 0 < ε) :
   have : Tendsto ((fun x : ℝ => x ^ (-ε)) ∘ fun n : ℕ => (n : ℝ)) atTop (𝓝 0) :=
     hcont.comp hcoe
   -- Unfold the composition to conclude
-  simpa using this
+  change Tendsto ((fun x : ℝ => x ^ (-ε)) ∘ fun n : ℕ => (n : ℝ)) atTop (𝓝 0)
+  exact this
 
 lemma helper_exists_limit_of_tail_bound (a : ℕ → ℂ) (b : ℕ → ℝ)
     (hb_nonneg : ∀ m, 0 ≤ b m)
@@ -1831,7 +1845,8 @@ lemma helper_integrableOn_of_bound_Ioc {m n : ℝ} {f : ℝ → ℂ} {g : ℝ �
     simp
   -- g is integrable w.r.t. μ
   have hg' : Integrable g μ := by
-    simpa [μ] using hg
+    change Integrable g (volume.restrict (Ioc m n))
+    exact hg
   -- f is a.e.-strongly measurable w.r.t. μ
   have hmeas' : AEStronglyMeasurable f μ := by
     simpa [μ] using hmeas
@@ -1842,7 +1857,8 @@ lemma helper_integrableOn_of_bound_Ioc {m n : ℝ} {f : ℝ → ℂ} {g : ℝ �
   have hf : Integrable f μ :=
     MeasureTheory.integrable_of_norm_sub_le (μ := μ) hmeas' hf0 hg' hineq
   -- conclude IntegrableOn on Ioc m n
-  simpa [μ] using hf
+  change Integrable f (volume.restrict (Ioc m n))
+  exact hf
 
 lemma helper_aestronglyMeasurable_kernel_Ioc (s : ℂ) {m n : ℝ} :
   AEStronglyMeasurable (fun u : ℝ => ((Int.fract u : ℝ) : ℂ) * (u : ℂ) ^ (-s - 1))
@@ -1860,7 +1876,11 @@ lemma helper_aestronglyMeasurable_kernel_Ioc (s : ℂ) {m n : ℝ} :
       measurability
     exact hmeas.aestronglyMeasurable
   -- product remains a.e.-strongly measurable
-  simpa using (MeasureTheory.AEStronglyMeasurable.mul h1 h2)
+  change AEStronglyMeasurable
+    ((fun u : ℝ => ((Int.fract u : ℝ) : ℂ)) *
+      (fun u : ℝ => (u : ℂ) ^ (-s - 1)))
+    (volume.restrict (Ioc m n))
+  exact h1.mul h2
 
 lemma helper_aebound_kernel_Ioc {ε : ℝ} (hε : 0 < ε) (s : ℂ) (hs : ε ≤ s.re)
     {m n : ℝ} (hm : 1 ≤ m) (hmn : m ≤ n) :
@@ -1914,12 +1934,12 @@ lemma helper_limit_norm_le_of_eventual_bound {a : ℕ → ℂ} {l : ℂ} {B : �
   exact le_of_tendsto hnorm hbound
 
 lemma lem_integralConvergence (ε : ℝ) (hε : 0 < ε) (s : ℂ) (hs : ε ≤ s.re) :
-    ∃ I : ℂ,
+    ∃ L : ℂ,
       Tendsto
         (fun N : ℕ =>
           ∫ u in (1 : ℝ)..N, (Int.fract u : ℝ) * (u : ℂ) ^ (-s - 1))
-        atTop (𝓝 I)
-      ∧ ‖I‖ ≤ (1 / ε) := by
+        atTop (𝓝 L)
+      ∧ ‖L‖ ≤ (1 / ε) := by
   classical
   -- Definitions
   let fC : ℝ → ℂ := fun u => ((Int.fract u : ℝ) : ℂ) * (u : ℂ) ^ (-s - 1)
@@ -2004,7 +2024,7 @@ lemma lem_integralConvergence (ε : ℝ) (hε : 0 < ε) (s : ℂ) (hs : ε ≤ s
     have h_n_ge_m : ∀ᶠ n in atTop, m ≤ n := eventually_ge_atTop m
     exact h_n_ge_m.mono (fun n hmn => by intro hle; exact h_tail_pointwise m n hm1 hle)
   -- Existence of the limit
-  rcases helper_exists_limit_of_tail_bound a b hb_nonneg hb_tendsto hbound with ⟨I, hT⟩
+  rcases helper_exists_limit_of_tail_bound a b hb_nonneg hb_tendsto hbound with ⟨L, hT⟩
   -- Eventual uniform bound on ‖a N‖
   have h_eventual_bound : ∀ᶠ N in atTop, ‖a N‖ ≤ (1 / ε) := by
     have hN1 : ∀ᶠ N in atTop, 1 ≤ N := eventually_ge_atTop 1
@@ -2034,10 +2054,10 @@ lemma lem_integralConvergence (ε : ℝ) (hε : 0 < ε) (s : ℂ) (hs : ε ≤ s
     have : ‖a N‖ ≤ (1 / ε) := by exact le_trans h1 h3
     exact this
   -- bound the limit norm using eventual bound
-  have hIle : ‖I‖ ≤ (1 / ε) :=
-    helper_limit_norm_le_of_eventual_bound (a := a) (l := I) (B := 1 / ε) hT h_eventual_bound
+  have hIle : ‖L‖ ≤ (1 / ε) :=
+    helper_limit_norm_le_of_eventual_bound (a := a) (l := L) (B := 1 / ε) hT h_eventual_bound
   -- conclude with Tendsto of the required function
-  refine ⟨I, ?_, hIle⟩
+  refine ⟨L, ?_, hIle⟩
   simpa [a, fC] using hT
 
 /-- Lemma: Zeta formula for `Re(s) > 1`. -/
@@ -2177,21 +2197,16 @@ lemma helper_limit_scaled_cpow (s : ℂ) (hs : 1 < s.re) (hsne : s ≠ 1) :
 
 lemma helper_tendsto_const_mul {f : ℕ → ℂ} {l : ℂ} (c : ℂ)
   (h : Tendsto f atTop (𝓝 l)) : Tendsto (fun n => c * f n) atTop (𝓝 (c * l)) := by
-  simpa using (Filter.Tendsto.const_mul (b := c) (f := f) (l := atTop) (c := l) h)
+  exact h.const_mul c
 
 lemma helper_tendsto_add {f g : ℕ → ℂ} {a b : ℂ}
   (hf : Tendsto f atTop (𝓝 a)) (hg : Tendsto g atTop (𝓝 b)) :
   Tendsto (fun n => f n + g n) atTop (𝓝 (a + b)) := by
-  -- Pair the limits and use continuity of addition
-  have hpair : Tendsto (fun n => (f n, g n)) atTop (𝓝 (a, b)) := by
-    simpa using (hf.prodMk_nhds hg)
-  have hadd : Continuous (fun p : ℂ × ℂ => p.1 + p.2) := by
-    simpa using (continuous_fst.add continuous_snd)
-  simpa using ((hadd.tendsto (a, b)).comp hpair)
+  exact hf.add hg
 
 lemma helper_tendsto_neg {f : ℕ → ℂ} {a : ℂ}
   (hf : Tendsto f atTop (𝓝 a)) : Tendsto (fun n => - f n) atTop (𝓝 (-a)) := by
-  simpa using ((continuous_neg.tendsto a).comp hf)
+  exact hf.neg
 
 lemma helper_tendsto_sub {f g : ℕ → ℂ} {a b : ℂ}
   (hf : Tendsto f atTop (𝓝 a)) (hg : Tendsto g atTop (𝓝 b)) :
@@ -2573,8 +2588,9 @@ lemma hasDerivAt_param_cpow_neg_one (u : ℝ) (hu : 0 < u) (z : ℂ) :
   -- base constant is nonzero since u > 0
   have hcu : (u : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt hu)
   -- derivative of f(w) = -w - 1 is f' = -1
-  have hId : HasDerivAt (fun w : ℂ => w) (1 : ℂ) z := by simpa using (hasDerivAt_id (x := z))
-  have hneg : HasDerivAt (fun w : ℂ => -w) (-1 : ℂ) z := by simpa using hId.neg
+  have hId : HasDerivAt (fun w : ℂ => w) (1 : ℂ) z := hasDerivAt_id' z
+  have hneg : HasDerivAt (fun w : ℂ => -w) (-1 : ℂ) z := by
+    convert! hId.neg
   have hf : HasDerivAt (fun w : ℂ => -w - 1) (-1 : ℂ) z := by
     -- add the constant -1
     simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using hneg.add_const (-1 : ℂ)
@@ -2675,10 +2691,10 @@ lemma exists_radius_ball_two_step_subset_halfspace (s : ℂ) {ε : ℝ} (hε : �
     have hpair := (abs_le.mp hre_abs)
     exact hpair.left
   have hyge : s.re - ‖y - s‖ ≤ y.re := by
-    have h' : s.re + (-‖y - s‖) ≤ s.re + (y - s).re := add_le_add_left hre_lower s.re
     have h'' : s.re + (y - s).re = y.re := by
       simp [Complex.sub_re, sub_eq_add_neg, add_comm, add_left_comm, add_assoc]
-    simpa [sub_eq_add_neg, h''] using h'
+    rw [← h'', sub_eq_add_neg]
+    gcongr
   -- Combine to get ε < y.re, hence ε ≤ y.re
   have hygt : ε < y.re := lt_of_lt_of_le h_eps_lt hyge
   exact le_of_lt hygt
@@ -2795,9 +2811,9 @@ lemma hasDerivAt_integral_param_dominated_Ioi
   -- Apply the dominated differentiation theorem for integrals over a restricted measure on Ioi 1
   have h :=
     hasDerivAt_integral_of_dominated_loc_of_deriv_le
+      (Metric.ball_mem_nhds s hδ)
       (μ := MeasureTheory.volume.restrict (Ioi (1 : ℝ)))
       (F := F) (F' := F') (x₀ := s)
-      (ε_pos := hδ)
       (hF_meas := hmeas) (hF_int := hFint)
       (hF'_meas := hF'meas)
       (h_bound := hbound) (bound_integrable := hbound_int)
@@ -3056,10 +3072,10 @@ lemma lem_zetaFormulaAC :
   have hconv := lem_integralConvergence (1/10) (by norm_num) s (le_of_lt hs_re_correct)
 
   -- Extract from existential
-  obtain ⟨I, hI_tendsto, hI_bound⟩ := hconv
+  obtain ⟨L, hI_tendsto, hI_bound⟩ := hconv
 
-  -- The bound is ‖I‖ ≤ 1/(1/10) = 10, which is what lem_integralAnalytic expects
-  have hI_bound_10 : ‖I‖ ≤ 10 := by
+  -- The bound is ‖Complex.I‖ ≤ 1/(1/10) = 10, which is what lem_integralAnalytic expects
+  have hI_bound_10 : ‖L‖ ≤ 10 := by
     convert hI_bound
     norm_num
 
@@ -3258,7 +3274,7 @@ lemma lem_zetaBound2 (s : ℂ) (hs_re : 1/10 < s.re) (hs_ne : s ≠ 1) : ‖riem
   -- Add the other terms
   have hsum0 : (1 + ‖1 / (s - 1)‖) + ‖s‖ * ‖∫ u in Ioi (1 : ℝ), f u‖
       ≤ (1 + ‖1 / (s - 1)‖) + ‖s‖ * (1 / s.re) := by
-    exact add_le_add_left hmul (1 + ‖1 / (s - 1)‖)
+    gcongr
   have hsum : 1 + ‖1 / (s - 1)‖ + ‖s‖ * ‖∫ u in Ioi (1 : ℝ), f u‖
       ≤ 1 + ‖1 / (s - 1)‖ + ‖s‖ * (1 / s.re) := by
     simpa [add_assoc] using hsum0
@@ -3297,7 +3313,7 @@ lemma lem_sBound (s : ℂ) (hs : (1/2 : ℝ) ≤ s.re ∧ s.re < (3 : ℝ)) : �
   have h_re_sq_lt : s.re ^ 2 < (3 : ℝ) ^ 2 := by
     simpa using (sq_lt_sq' hnegthree_lt_re hlt3)
   have hsumlt : s.re ^ 2 + s.im ^ 2 < (3 : ℝ) ^ 2 + s.im ^ 2 := by
-    exact add_lt_add_right h_re_sq_lt _
+    linarith
   have hsq : ‖s‖ ^ 2 < (3 + |s.im|) ^ 2 := by
     have h := lt_of_lt_of_le hsumlt (helper_three_abs_sq s.im)
     simpa [helper_normsq s] using h
@@ -3366,7 +3382,8 @@ lemma lem_finalBoundCombination (s : ℂ) (hs_re : (1/2 : ℝ) ≤ s.re ∧ s.re
     _ ≤ 1 + 1 + ‖s‖ / s.re := by linarith [h3]
     _ ≤ 1 + 1 + ‖s‖ * 2 := by
       have s_nonneg : 0 ≤ ‖s‖ := norm_nonneg _
-      exact add_le_add_left (div_le_mul_of_one_div_le s_nonneg hs_re_pos h5) _
+      gcongr
+      exact div_le_mul_of_one_div_le s_nonneg hs_re_pos h5
     _ < 1 + 1 + ((3 : ℝ) + |s.im|) * 2 := by linarith [h4]
 
 /-- Lemma: Final algebraic simplification. -/
@@ -3381,27 +3398,27 @@ lemma lem_zetaUppBd (z : ℂ) (hz_re : z.re ∈ Ico (1/2 : ℝ) (3 : ℝ)) (hz_i
 
 /-- Lemma: `z` from `s` (first version). -/
 lemma lem_zfroms_calc (s : ℂ) (t : ℝ) :
-    (let z := s + (3/2 : ℝ) + I * t
+    (let z := s + (3/2 : ℝ) + Complex.I * t
      z.re = s.re + (3/2 : ℝ) ∧ z.im = s.im + t) := by
   constructor
   · -- z.re = s.re + (3/2 : ℝ)
     simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im]
-    -- After expansion: s.re + 3/2 + (I.re * t - I.im * 0) = s.re + 3/2
-    have h1 : I.re = 0 := Complex.I_re
-    have h2 : I.im * 0 = 0 := mul_zero _
+    -- After expansion: s.re + 3/2 + (Complex.I.re * t - Complex.I.im * 0) = s.re + 3/2
+    have h1 : Complex.I.re = 0 := Complex.I_re
+    have h2 : Complex.I.im * 0 = 0 := mul_zero _
     rw [h1, h2]
     simp
   · -- z.im = s.im + t
     simp only [Complex.add_im, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im]
-    -- After expansion: s.im + 0 + (I.re * 0 + I.im * t) = s.im + t
-    have h1 : I.re * 0 = 0 := mul_zero _
-    have h2 : I.im = 1 := Complex.I_im
+    -- After expansion: s.im + 0 + (Complex.I.re * 0 + Complex.I.im * t) = s.im + t
+    have h1 : Complex.I.re * 0 = 0 := mul_zero _
+    have h2 : Complex.I.im = 1 := Complex.I_im
     rw [h1, h2]
     simp
 
 lemma lem_zfroms_conditions (s : ℂ) (t : ℝ)
     (hs : ‖s‖ ≤ (1 : ℝ)) (ht : (2 : ℝ) < |t|) :
-    (let z := s + (3/2 : ℝ) + I * t
+    (let z := s + (3/2 : ℝ) + Complex.I * t
      z.re ∈ Ico (1/2 : ℝ) (3 : ℝ) ∧ (1 : ℝ) ≤ |z.im|) := by
   -- Apply lem_zfroms_calc to get z.re and z.im formulas
   have h_calc := lem_zfroms_calc s t
@@ -3457,15 +3474,15 @@ lemma lem_zfroms_conditions (s : ℂ) (t : ℝ)
 lemma lem_abs_im_bound (s : ℂ) (t : ℝ) (hs : ‖s‖ ≤ 1) : |s.im + t| ≤ 1 + |t| := by
   have h1 : |s.im| ≤ ‖s‖ := Complex.abs_im_le_norm s
   have h2 : |s.im| ≤ 1 := le_trans h1 hs
-  have h3 : |s.im + t| ≤ |s.im| + |t| := abs_add s.im t
+  have h3 : |s.im + t| ≤ |s.im| + |t| := abs_add_le s.im t
   linarith
 
 /-- Lemma: Final zeta upper bound with shift. -/
 lemma lem_zetaUppBound :
     ∀ t : ℝ, ∀ s : ℂ, ‖s‖ ≤ (1 : ℝ) → (2 : ℝ) < |t| →
-      ‖riemannZeta (s + (3/2 : ℝ) + I * t)‖ < (10 : ℝ) + 2 * |t| := by
+      ‖riemannZeta (s + (3/2 : ℝ) + Complex.I * t)‖ < (10 : ℝ) + 2 * |t| := by
   intro t s hs ht
-  set z := s + (3/2 : ℝ) + I * t with hz_def
+  set z := s + (3/2 : ℝ) + Complex.I * t with hz_def
   -- Apply lem_zfroms_conditions to get conditions on z
   have hz_cond : z.re ∈ Ico (1/2 : ℝ) (3 : ℝ) ∧ (1 : ℝ) ≤ |z.im| :=
     lem_zfroms_conditions s t hs ht
@@ -3536,94 +3553,94 @@ lemma zetaanalOnnot1 : AnalyticOnNhd ℂ riemannZeta {s : ℂ | s ≠ 1} := by
   · apply isOpen_compl_singleton
   · exact zetadiffAtnot1
 
-lemma I_mul_ofReal_im (t : ℝ) : (I * ↑t).im = t := by
-  have h1 : (I * (↑t : ℂ)).im = (↑t : ℂ).re := Complex.I_mul_im (↑t : ℂ)
+lemma I_mul_ofReal_im (t : ℝ) : (Complex.I * ↑t).im = t := by
+  have h1 : (Complex.I * (↑t : ℂ)).im = (↑t : ℂ).re := Complex.I_mul_im (↑t : ℂ)
   rw [h1]
   simp [Complex.ofReal_re]
 
-lemma complex_im_sub_I_mul (a : ℂ) (t : ℝ) : (a - I * t).im = a.im - t := by
+lemma complex_im_sub_I_mul (a : ℂ) (t : ℝ) : (a - Complex.I * t).im = a.im - t := by
   rw [Complex.sub_im]
   rw [I_mul_ofReal_im]
 
 lemma D1cinTt_pre (t : ℝ) (ht : |t| > 1) :
-    ∀ s ∈ closedBall (3/2 + I * t : ℂ) 1, s ≠ 1 := by
+    ∀ s ∈ closedBall (3/2 + Complex.I * t : ℂ) 1, s ≠ 1 := by
   intro s hs
   by_contra h
-  -- h : s = 1, hs : s ∈ closedBall (3/2 + I * t) 1
+  -- h : s = 1, hs : s ∈ closedBall (3/2 + Complex.I * t) 1
   rw [h] at hs
-  -- Now hs : 1 ∈ closedBall (3/2 + I * t) 1
+  -- Now hs : 1 ∈ closedBall (3/2 + Complex.I * t) 1
   rw [mem_closedBall] at hs
-  -- hs : dist 1 (3/2 + I * t) ≤ 1
+  -- hs : dist 1 (3/2 + Complex.I * t) ≤ 1
   rw [Complex.dist_eq] at hs
-  -- hs : ‖1 - (3/2 + I * t)‖ ≤ 1
+  -- hs : ‖1 - (3/2 + Complex.I * t)‖ ≤ 1
 
-  -- Simplify 1 - (3/2 + I * t) = -1/2 - I * t
-  have h1 : (1 : ℂ) - (3/2 + I * t) = -1/2 - I * t := by ring
+  -- Simplify 1 - (3/2 + Complex.I * t) = -1/2 - Complex.I * t
+  have h1 : (1 : ℂ) - (3/2 + Complex.I * t) = -1/2 - Complex.I * t := by ring
   rw [h1] at hs
 
-  -- The imaginary part of (-1/2 - I * t) is -t using the helper lemma
-  have h2 : (-1/2 - I * t : ℂ).im = -t := by
-    have : (-1/2 - I * t : ℂ) = (-1/2 : ℂ) - I * t := by ring
+  -- The imaginary part of (-1/2 - Complex.I * t) is -t using the helper lemma
+  have h2 : (-1/2 - Complex.I * t : ℂ).im = -t := by
+    have : (-1/2 - Complex.I * t : ℂ) = (-1/2 : ℂ) - Complex.I * t := by ring
     rw [this]
     rw [complex_im_sub_I_mul]
     simp [Complex.ofReal_im]
 
   -- Use the fact that |z| ≥ |Im(z)|
-  have h3 : ‖(-1/2 - I * t : ℂ)‖ ≥ |(-1/2 - I * t : ℂ).im| := Complex.abs_im_le_norm _
+  have h3 : ‖(-1/2 - Complex.I * t : ℂ)‖ ≥ |(-1/2 - Complex.I * t : ℂ).im| := Complex.abs_im_le_norm _
 
-  -- So ‖(-1/2 - I * t)‖ ≥ |-t| = |t|
+  -- So ‖(-1/2 - Complex.I * t)‖ ≥ |-t| = |t|
   rw [h2] at h3
   rw [abs_neg] at h3
 
-  -- Since |t| > 1 and |t| ≤ ‖(-1/2 - I * t)‖, we have ‖(-1/2 - I * t)‖ > 1
-  have h4 : ‖(-1/2 - I * t : ℂ)‖ > 1 := lt_of_lt_of_le ht h3
+  -- Since |t| > 1 and |t| ≤ ‖(-1/2 - Complex.I * t)‖, we have ‖(-1/2 - Complex.I * t)‖ > 1
+  have h4 : ‖(-1/2 - Complex.I * t : ℂ)‖ > 1 := lt_of_lt_of_le ht h3
 
-  -- This contradicts hs : ‖-1/2 - I * t‖ ≤ 1
+  -- This contradicts hs : ‖-1/2 - Complex.I * t‖ ≤ 1
   linarith [h4, hs]
 
 -- Lemma 10: D1cinTt
 lemma D1cinTt (t : ℝ) (ht : |t| > 1) :
-    closedBall (3/2 + I * t : ℂ) 1 ⊆ {s : ℂ | s ≠ 1} := by
+    closedBall (3/2 + Complex.I * t : ℂ) 1 ⊆ {s : ℂ | s ≠ 1} := by
   -- This follows directly from D1cinTt_pre
   exact fun s hs => D1cinTt_pre t ht s hs
 
 -- Lemma 11: zetaanalOnD1c
 lemma zetaanalOnD1c (t : ℝ) (ht : |t| > 1) :
-    AnalyticOnNhd ℂ riemannZeta (closedBall (3/2 + I * t : ℂ) 1) := by
+    AnalyticOnNhd ℂ riemannZeta (closedBall (3/2 + Complex.I * t : ℂ) 1) := by
   apply zetaanalOnnot1.mono
   exact D1cinTt t ht
 
 -- Lemma 11': zetaanalOnD1c_general
 lemma zetaanalOnD1c_general (x t : ℝ) (ht : |t| > 1) :
-    AnalyticOnNhd ℂ riemannZeta (closedBall (x + I * t : ℂ) 1) := by
+    AnalyticOnNhd ℂ riemannZeta (closedBall (x + Complex.I * t : ℂ) 1) := by
   apply zetaanalOnnot1.mono
-  -- Show that closedBall (x + I * t) 1 ⊆ {s : ℂ | s ≠ 1}
+  -- Show that closedBall (x + Complex.I * t) 1 ⊆ {s : ℂ | s ≠ 1}
   intro s hs
   by_contra h
-  -- h : s = 1, hs : s ∈ closedBall (x + I * t) 1
+  -- h : s = 1, hs : s ∈ closedBall (x + Complex.I * t) 1
   have h' : s = 1 := by
     simp at h
     exact h
   rw [h'] at hs
   rw [mem_closedBall] at hs
   rw [Complex.dist_eq] at hs
-  -- hs : ‖1 - (x + I * t)‖ ≤ 1
-  have h1 : (1 : ℂ) - (x + I * t) = (1 - x) - I * t := by ring
+  -- hs : ‖1 - (x + Complex.I * t)‖ ≤ 1
+  have h1 : (1 : ℂ) - (x + Complex.I * t) = (1 - x) - Complex.I * t := by ring
   rw [h1] at hs
   -- The imaginary part is -t
-  have h2 : ((1 - x) - I * t : ℂ).im = -t := by
+  have h2 : ((1 - x) - Complex.I * t : ℂ).im = -t := by
     rw [Complex.sub_im]
     rw [Complex.sub_im]
     rw [Complex.ofReal_im]
     rw [I_mul_ofReal_im]
     simp
   -- Use |Im(z)| ≤ |z|
-  have h3 : ‖((1 - x) - I * t : ℂ)‖ ≥ |((1 - x) - I * t : ℂ).im| := Complex.abs_im_le_norm _
+  have h3 : ‖((1 - x) - Complex.I * t : ℂ)‖ ≥ |((1 - x) - Complex.I * t : ℂ).im| := Complex.abs_im_le_norm _
   rw [h2] at h3
   rw [abs_neg] at h3
-  -- Since |t| > 1 and x < 2, we have |t| ≤ ‖(1-x) - I*t‖
-  have h4 : ‖((1 - x) - I * t : ℂ)‖ > 1 := lt_of_lt_of_le ht h3
-  -- This contradicts hs : ‖(1-x) - I*t‖ ≤ 1
+  -- Since |t| > 1 and x < 2, we have |t| ≤ ‖(1-x) - Complex.I*t‖
+  have h4 : ‖((1 - x) - Complex.I * t : ℂ)‖ > 1 := lt_of_lt_of_le ht h3
+  -- This contradicts hs : ‖(1-x) - Complex.I*t‖ ≤ 1
   linarith
 
 -- Lemma 12: sigmageq1
@@ -3632,25 +3649,25 @@ lemma sigmageq1 (s : ℂ) (hs : s.re > 1) : riemannZeta s ≠ 0 :=
 
 -- Lemma 13: zetacnot0
 
-lemma Complex_I_mul_ofReal_re (r : ℝ) : (I * (r : ℂ)).re = 0 := by
-  have h : (I * (r : ℂ)).re = -(r : ℂ).im := Complex.I_mul_re (r : ℂ)
+lemma Complex_I_mul_ofReal_re (r : ℝ) : (Complex.I * (r : ℂ)).re = 0 := by
+  have h : (Complex.I * (r : ℂ)).re = -(r : ℂ).im := Complex.I_mul_re (r : ℂ)
   rw [h]
   simp
 
-lemma re_real_add_I_mul_gt (a b : ℝ) (h : a > 1) : (a + I * b).re > 1 := by
+lemma re_real_add_I_mul_gt (a b : ℝ) (h : a > 1) : (a + Complex.I * b).re > 1 := by
   rw [Complex.add_re]
   rw [Complex.ofReal_re]
   rw [Complex_I_mul_ofReal_re]
   simp
   exact h
 
-lemma zetacnot0 (t : ℝ) : riemannZeta (3/2 + I * t) ≠ 0 := by
+lemma zetacnot0 (t : ℝ) : riemannZeta (3/2 + Complex.I * t) ≠ 0 := by
   apply sigmageq1
   apply re_real_add_I_mul_gt
   norm_num
 
 -- General version for any x > 1
-lemma zetacnot0_general (x t : ℝ) (hx : x > 1) : riemannZeta (x + I * t) ≠ 0 := by
+lemma zetacnot0_general (x t : ℝ) (hx : x > 1) : riemannZeta (x + Complex.I * t) ≠ 0 := by
   apply sigmageq1
   apply re_real_add_I_mul_gt
   exact hx
@@ -3681,7 +3698,7 @@ lemma fc_analytic_normalized (c : ℂ) (f : ℂ → ℂ)
       exact h_nonzero
   · -- Second part: show evaluation at 0 equals 1
     simp
-    exact div_self h_nonzero
+    exact h_nonzero
 
 -- Lemma: fc_log_deriv
 
@@ -3775,6 +3792,7 @@ lemma analyticOrderAt_const_mul_eq (f : ℂ → ℂ) (a z0 : ℂ) (ha : a ≠ 0)
       · exact Filter.Eventually.of_forall (fun _ => by simp)
     have hmul := analyticOrderAt_mul (f := fun _ : ℂ => a) (g := f) hconst hf
     -- (a) * f has order 0 + order f = order f
+    rw [show (fun z => a * f z) = (fun _ : ℂ => a) * f by funext z; rfl]
     simpa [hconst_order_zero, zero_add] using hmul
   · -- Non-analytic case: analyticity equivalence under multiplication by a nonzero constant
     have hconst : AnalyticAt ℂ (fun _ : ℂ => a) z0 := by
@@ -3792,40 +3810,22 @@ lemma analyticOrderAt_const_mul_eq (f : ℂ → ℂ) (a z0 : ℂ) (ha : a ≠ 0)
     simp [analyticOrderAt, hf, hmul]
 
 lemma AnalyticAt.comp_add_const {f : ℂ → ℂ} {z0 c : ℂ} (hf : AnalyticAt ℂ f (z0 + c)) : AnalyticAt ℂ (fun z => f (z + c)) z0 := by
-  -- Build analyticity of the translation z ↦ z + c
-  have hinner : AnalyticAt ℂ (fun z : ℂ => z + c) z0 := by
-    have h_id : AnalyticAt ℂ (fun z : ℂ => z) z0 := by
-      simpa [id] using (analyticAt_id : AnalyticAt ℂ (id : ℂ → ℂ) z0)
-    have h_const : AnalyticAt ℂ (fun _ : ℂ => c) z0 := by
-      simpa using (analyticAt_const (v := c) (x := z0))
-    simpa using (AnalyticAt.fun_add (f := fun z : ℂ => z) (g := fun _ : ℂ => c) (x := z0) h_id h_const)
-  -- Compose f with the translation
-  simpa using (AnalyticAt.comp' (x := z0) hf hinner)
+  fun_prop
 
 lemma AnalyticAt.of_comp_add_const {f : ℂ → ℂ} {z0 c : ℂ}
     (hg : AnalyticAt ℂ (fun z => f (z + c)) z0) :
     AnalyticAt ℂ f (z0 + c) := by
   -- The translation by −c is analytic everywhere
   have hT : AnalyticAt ℂ (fun z => z - c) (z0 + c) := by
-    have h1 : AnalyticAt ℂ (fun z : ℂ => z) (z0 + c) := by
-      simpa using (analyticAt_id : AnalyticAt ℂ (fun z : ℂ => z) (z0 + c))
-    have h2 : AnalyticAt ℂ (fun _ : ℂ => -c) (z0 + c) := by
-      simpa using (analyticAt_const (x := (z0 + c)) (v := (-c : ℂ)))
-    have : AnalyticAt ℂ (fun z => z + (-c)) (z0 + c) := by
-      simpa using (AnalyticAt.fun_add h1 h2)
-    simpa [sub_eq_add_neg] using this
+    fun_prop
   -- Adjust the point where hg is known using (z0 + c) - c = z0
   have hx : (z0 + c) - c = z0 := by simp
   have hg' : AnalyticAt ℂ (fun z => f (z + c)) ((z0 + c) - c) := by
     simpa [hx] using hg
   -- Compose: f = (fun z => f (z + c)) ∘ (fun z => z - c)
-  have hcomp :=
-    (AnalyticAt.comp (g := (fun z => f (z + c))) (f := (fun z => z - c)) (x := z0 + c)
-      hg' hT)
-  have hgf : ((fun z => f (z + c)) ∘ (fun z => z - c)) = f := by
-    funext z
-    simp [Function.comp, sub_eq_add_neg, sub_add_cancel]
-  simpa [hgf] using hcomp
+  have hcomp := AnalyticAt.comp
+    (g := fun z => f (z + c)) (f := fun z => z - c) (x := z0 + c) hg' hT
+  simpa [Function.comp_def] using hcomp
 
 lemma order_top_iff_comp_add (f : ℂ → ℂ) (z0 c : ℂ) :
     analyticOrderAt (fun z => f (z + c)) z0 = ⊤ ↔ analyticOrderAt f (z0 + c) = ⊤ := by
@@ -3841,8 +3841,7 @@ lemma order_top_iff_comp_add (f : ℂ → ℂ) (z0 c : ℂ) :
     have hz : ∀ᶠ z in nhds z0, g z = 0 := (eq_left.mp htop)
     -- Transfer along w ↦ w - c
     have hcont_sub : ContinuousAt (fun w : ℂ => w - c) (z0 + c) := by
-      simpa [sub_eq_add_neg] using
-        ((continuousAt_id).add (continuousAt_const : ContinuousAt (fun _ : ℂ => -c) (z0 + c)))
+      fun_prop
     have htend : Tendsto (fun w : ℂ => w - c) (nhds (z0 + c)) (nhds ((z0 + c) - c)) :=
       hcont_sub.tendsto
     have hz' : ∀ᶠ w in nhds ((z0 + c) - c), g w = 0 := by
@@ -3855,7 +3854,7 @@ lemma order_top_iff_comp_add (f : ℂ → ℂ) (z0 c : ℂ) :
     have hw : ∀ᶠ w in nhds (z0 + c), f w = 0 := (eq_right.mp htop)
     -- Transfer along z ↦ z + c
     have hcont_add : ContinuousAt (fun z : ℂ => z + c) z0 :=
-      by simpa using ((continuousAt_id).add (continuousAt_const : ContinuousAt (fun _ : ℂ => c) z0))
+      by fun_prop
     have htend : Tendsto (fun z : ℂ => z + c) (nhds z0) (nhds (z0 + c)) :=
       hcont_add.tendsto
     have hz : ∀ᶠ z in nhds z0, f (z + c) = 0 := htend.eventually hw
@@ -3879,12 +3878,11 @@ lemma enat_le_iff_forall_nat {x y : ℕ∞} : x ≤ y ↔ ∀ n : ℕ, (n : ℕ�
       -- Apply the hypothesis at n = m+1; note (m+1) ≤ ⊤ is trivial
       have h' : ((m + 1 : ℕ) : ℕ∞) ≤ y := h (m + 1) (by simp)
       -- Rewrite y as ↑m
-      have h'' : ((m + 1 : ℕ) : ℕ∞) ≤ (m : ℕ∞) := by
-        simpa [← hm]
-          using h'
-      -- Move to ℕ and get a contradiction
-      have : m + 1 ≤ m := (WithTop.coe_le_coe).1 h''
-      exact Nat.not_succ_le_self m this
+      rw [← hm] at h'
+      have : ¬ (((m + 1 : ℕ) : ℕ∞) ≤ (m : ℕ∞)) := by
+        norm_cast
+        exact Nat.not_succ_le_self m
+      exact (this h').elim
     · -- x ≠ ⊤, so x = ↑k for some k
       obtain ⟨k, hk'⟩ := (WithTop.ne_top_iff_exists).1 hx
       have hk : x = (k : ℕ∞) := hk'.symm
@@ -3920,7 +3918,8 @@ lemma analyticOrderAt_mul_const_eq (f : ℂ → ℂ) (a z0 : ℂ) (ha : a ≠ 0)
       simpa using (analyticAt_const : AnalyticAt ℂ (fun _ : ℂ => a) z0)
     have hadd : analyticOrderAt (fun z => a * f z) z0
         = analyticOrderAt (fun _ : ℂ => a) z0 + analyticOrderAt f z0 := by
-      simpa using (analyticOrderAt_mul hconst hf)
+      rw [show (fun z => a * f z) = (fun _ : ℂ => a) * f by funext z; rfl]
+      exact analyticOrderAt_mul hconst hf
     -- order of a nonzero constant is zero
     have hconst_zero : analyticOrderAt (fun _ : ℂ => a) z0 = 0 := by
       have hiff := (AnalyticAt.analyticOrderAt_eq_zero hconst)
@@ -3974,17 +3973,16 @@ lemma fc_m_order (r : ℝ) (h : r > 0) (c : ℂ) (f : ℂ → ℂ) (h_nonzero : 
     by_cases hfA : AnalyticAt ℂ f (ρ' + c)
     · -- Then g0 is analytic at ρ' by composition with addition
       have h_add : AnalyticAt ℂ (fun z : ℂ => z + c) ρ' := by
-        simpa using (AnalyticAt.add (analyticAt_id : AnalyticAt ℂ (fun z : ℂ => z) ρ')
-                                    (analyticAt_const : AnalyticAt ℂ (fun _ : ℂ => c) ρ'))
+        fun_prop
       have hgA : AnalyticAt ℂ g0 ρ' := by
         have : AnalyticAt ℂ f ((fun z : ℂ => z + c) ρ') := by simpa using hfA
-        simpa [g0, hg0] using (AnalyticAt.comp (g := f) (f := fun z : ℂ => z + c) (x := ρ') this h_add)
+        change AnalyticAt ℂ (f ∘ fun z : ℂ => z + c) ρ'
+        exact AnalyticAt.comp this h_add
       -- Consider whether g0 vanishes identically near ρ'
       by_cases hgez : (∀ᶠ z in nhds ρ', g0 z = 0)
       · -- Transport the eventual zero along w ↦ w - c to get eventual zero for f near ρ' + c
         have hT_sub_cont : ContinuousAt (fun w : ℂ => w - c) (ρ' + c) := by
-          simpa using (ContinuousAt.sub (continuousAt_id : ContinuousAt (fun w : ℂ => w) (ρ' + c))
-                                        (continuousAt_const : ContinuousAt (fun _ : ℂ => c) (ρ' + c)))
+          fun_prop
         have hT_sub : Tendsto (fun w : ℂ => w - c) (nhds (ρ' + c)) (nhds ρ') := by
           simpa using (hT_sub_cont.tendsto)
         have hEfw : ∀ᶠ w in nhds (ρ' + c), f w = 0 := by
@@ -4002,8 +4000,7 @@ lemma fc_m_order (r : ℝ) (h : r > 0) (c : ℂ) (f : ℂ → ℂ) (h_nonzero : 
         rcases h_exists with ⟨n, φ, hφA, hφ_ne, hevent⟩
         -- Push the event along w ↦ w - c
         have hT_sub_cont : ContinuousAt (fun w : ℂ => w - c) (ρ' + c) := by
-          simpa using (ContinuousAt.sub (continuousAt_id : ContinuousAt (fun w : ℂ => w) (ρ' + c))
-                                        (continuousAt_const : ContinuousAt (fun _ : ℂ => c) (ρ' + c)))
+          fun_prop
         have hT_sub : Tendsto (fun w : ℂ => w - c) (nhds (ρ' + c)) (nhds ρ') := by
           simpa using (hT_sub_cont.tendsto)
         have hevent_w : ∀ᶠ w in nhds (ρ' + c), f w
@@ -4019,10 +4016,10 @@ lemma fc_m_order (r : ℝ) (h : r > 0) (c : ℂ) (f : ℂ → ℂ) (h_nonzero : 
         -- Define ψ(w) = φ (w - c) and check analyticity and nonvanishing at w0
         have hψA : AnalyticAt ℂ (fun w => φ (w - c)) (ρ' + c) := by
           have h_subA : AnalyticAt ℂ (fun w : ℂ => w - c) (ρ' + c) := by
-            simpa using (AnalyticAt.sub (analyticAt_id : AnalyticAt ℂ (fun z : ℂ => z) (ρ' + c))
-                                        (analyticAt_const : AnalyticAt ℂ (fun _ : ℂ => c) (ρ' + c)))
+            fun_prop
           have hφA_at : AnalyticAt ℂ φ ((fun w : ℂ => w - c) (ρ' + c)) := by simpa using hφA
-          simpa using (AnalyticAt.comp (g := φ) (f := fun w => w - c) (x := (ρ' + c)) hφA_at h_subA)
+          change AnalyticAt ℂ (φ ∘ fun w : ℂ => w - c) (ρ' + c)
+          exact AnalyticAt.comp hφA_at h_subA
         have hψ_ne : (fun w => φ (w - c)) (ρ' + c) ≠ 0 := by
           -- value at (ρ' + c) is φ ρ'
           simpa using hφ_ne
@@ -4039,13 +4036,14 @@ lemma fc_m_order (r : ℝ) (h : r > 0) (c : ℂ) (f : ℂ → ℂ) (h_nonzero : 
         intro hgA
         -- Compose with w ↦ w - c to deduce analyticity of f at ρ' + c
         have h_subA : AnalyticAt ℂ (fun w : ℂ => w - c) (ρ' + c) := by
-          simpa using (AnalyticAt.sub (analyticAt_id : AnalyticAt ℂ (fun z : ℂ => z) (ρ' + c))
-                                      (analyticAt_const : AnalyticAt ℂ (fun _ : ℂ => c) (ρ' + c)))
+          fun_prop
         have hgA_at : AnalyticAt ℂ g0 ((ρ' + c) - c) := by simpa using hgA
-        have hcomp := (AnalyticAt.comp (g := g0) (f := fun w => w - c)
-                          (x := (ρ' + c)) hgA_at h_subA)
+        have hcomp := AnalyticAt.comp
+          (g := g0) (f := fun w => w - c) (x := ρ' + c) hgA_at h_subA
         -- simplify composition to f
-        have : AnalyticAt ℂ (fun w : ℂ => g0 (w - c)) (ρ' + c) := by simpa using hcomp
+        have : AnalyticAt ℂ (fun w : ℂ => g0 (w - c)) (ρ' + c) := by
+          change AnalyticAt ℂ (g0 ∘ fun w : ℂ => w - c) (ρ' + c)
+          exact hcomp
         have : AnalyticAt ℂ f (ρ' + c) := by
           simpa [g0, hg0, sub_add_cancel] using this
         exact hfA this
@@ -4252,7 +4250,7 @@ lemma log_Deriv_Expansion_Zeta (t : ℝ) (ht : |t| > 2)
     (r1 r R1 R : ℝ)
     (hr1_pos : 0 < r1) (hr1_lt_r : r1 < r)
     (hr_pos : 0 < r) (hr_lt_R1 : r < R1) (hR1_pos : 0 < R1) (hR1_lt_R : R1 < R) (hR_lt_1 : R < 1) :
-    let c := (3/2 : ℂ) + I * t
+    let c := (3/2 : ℂ) + Complex.I * t
     ∀ B > 1, (∀ z ∈ closedBall c R, ‖riemannZeta z‖ < B) →
     ∀ (hfin : (zerosetKfRc R1 c riemannZeta).Finite),
     ∀ z ∈ closedBall c r1 \ zerosetKfRc R1 c riemannZeta,
@@ -4322,7 +4320,7 @@ lemma log_Deriv_Expansion_Zeta (t : ℝ) (ht : |t| > 2)
   -- Replace derivative quotient by logDerivZeta
   simpa [logDerivZeta] using hineq2
 
---   let c := (3/2 : ℂ) + I * t
+--   let c := (3/2 : ℂ) + Complex.I * t
 --   -- Apply log_Deriv_Expansion0 as mentioned in the informal proof
 --   obtain ⟨C, hC_pos, hC⟩ := log_Deriv_Expansion0
 --   use C
@@ -4340,22 +4338,26 @@ lemma log_Deriv_Expansion_Zeta (t : ℝ) (ht : |t| > 2)
 --     exact hC B hB_pos r R1 R hr hrR1 hR1R hR c riemannZeta h_analytic h_nonzero hB_bound hfin z hz
 -- -- Lemma 16: zeta32lower
 
-lemma zeta32lower : ∃ a > 0, ∀ t : ℝ, ‖riemannZeta (3/2 + I * t)‖ ≥ a := by
+lemma zeta32lower : ∃ a > 0, ∀ t : ℝ, ‖riemannZeta (3/2 + Complex.I * t)‖ ≥ a := by
   rcases zeta_low_332 with ⟨a, ha_pos, hbound⟩
   refine ⟨a, ha_pos, ?_⟩
   intro t
-  simpa [mul_comm] using (hbound t)
+  have heq : (3 / 2 : ℂ) + Complex.I * (t : ℂ) =
+      (3 : ℂ) / 2 + (t : ℂ) * Complex.I := by
+    apply Complex.ext <;> simp [mul_comm]
+  rw [heq]
+  exact hbound t
 
 -- Lemma 17: zeta32lower_log
 lemma zeta32lower_log : ∃ A > 1, ∀ t : ℝ,
-    Real.log (1 / ‖riemannZeta (3/2 + I * t)‖) ≤ A := by
+    Real.log (1 / ‖riemannZeta (3/2 + Complex.I * t)‖) ≤ A := by
   obtain ⟨a, ha_pos, hbound⟩ := zeta32lower
   refine ⟨max (2 : ℝ) (Real.log (1 / a)), ?_, ?_⟩
   · have h1 : (1 : ℝ) < 2 := by norm_num
     have h2 : (2 : ℝ) ≤ max (2 : ℝ) (Real.log (1 / a)) := by exact le_max_left _ _
     exact lt_of_lt_of_le h1 h2
   · intro t
-    set x := ‖riemannZeta (3/2 + I * t)‖ with hx
+    set x := ‖riemannZeta (3/2 + Complex.I * t)‖ with hx
     have hax : a ≤ x := by
       simpa [hx] using (hbound t)
     have hxpos : 0 < x := lt_of_lt_of_le ha_pos hax
@@ -4376,7 +4378,11 @@ lemma zeta32upper_pre : ∃ b > 1, ∀ t : ℝ, ∀ s : ℂ, ‖s‖ ≤ 1 → (
   refine ⟨(12 : ℝ), by norm_num, ?_⟩
   intro t s hs ht
   have hlt : ‖riemannZeta (s + 3/2 + Complex.I * t)‖ < (10 : ℝ) + 2 * |t| := by
-    simpa using (lem_zetaUppBound t s hs ht)
+    have heq : s + (3 / 2 : ℂ) + Complex.I * (t : ℂ) =
+        s + ((((3 : ℝ) / 2 : ℝ) : ℂ)) + Complex.I * (t : ℂ) := by
+      apply Complex.ext <;> simp
+    rw [heq]
+    exact lem_zetaUppBound t s hs ht
   have honele : (1 : ℝ) ≤ |t| := by
     have : (1 : ℝ) < |t| := lt_trans (by norm_num) ht
     exact le_of_lt this
@@ -4384,14 +4390,12 @@ lemma zeta32upper_pre : ∃ b > 1, ∀ t : ℝ, ∀ s : ℂ, ‖s‖ ≤ 1 → (
     simpa [mul_comm] using
       (mul_le_mul_of_nonneg_right honele (by norm_num : (0 : ℝ) ≤ (10 : ℝ)))
   have hle2 : (10 : ℝ) + 2 * |t| ≤ (12 : ℝ) * |t| := by
-    have htmp := add_le_add_right h10le (2 * |t|)
-    have hcalc : 10 * |t| + 2 * |t| = (12 : ℝ) * |t| := by ring
-    simpa [hcalc] using htmp
+    nlinarith
   exact lt_of_lt_of_le hlt hle2
 
 -- Lemma 19: zeta32upper
 lemma zeta32upper : ∃ b > 1, ∀ t : ℝ, |t| > 2 →
-  let c := (3/2 : ℂ) + I * t
+  let c := (3/2 : ℂ) + Complex.I * t
   ∀ s ∈ closedBall c 1, ‖riemannZeta s‖ < b * |t| := by
   -- Use zeta32upper_pre to get the bound
   obtain ⟨b, hb_gt, hbound⟩ := zeta32upper_pre
@@ -4404,8 +4408,8 @@ lemma zeta32upper : ∃ b > 1, ∀ t : ℝ, |t| > 2 →
   have hs_pre_bound : ‖s_pre‖ ≤ 1 := by
     rw [hs_pre_def]
     rwa [Complex.dist_eq] at hs
-  -- Now s = s_pre + c = s_pre + 3/2 + I * t
-  have hs_eq : s = s_pre + 3/2 + I * t := by
+  -- Now s = s_pre + c = s_pre + 3/2 + Complex.I * t
+  have hs_eq : s = s_pre + 3/2 + Complex.I * t := by
     rw [hs_pre_def]
     ring
   -- Apply zeta32upper_pre
@@ -4418,10 +4422,10 @@ lemma closedBall_subset_unit (c : ℂ) (R : ℝ) (hR_lt_1 : R < 1) :
   Metric.closedBall c R ⊆ Metric.closedBall c 1 := by
   apply Metric.closedBall_subset_closedBall (le_of_lt hR_lt_1)
 
-lemma zeta_c_nonzero (t : ℝ) : riemannZeta (3/2 + I * t) ≠ 0 := by
+lemma zeta_c_nonzero (t : ℝ) : riemannZeta (3/2 + Complex.I * t) ≠ 0 := by
   exact zetacnot0 t
 
-lemma zeta_c_norm_pos (t : ℝ) : 0 < ‖riemannZeta (3/2 + I * t)‖ := by
+lemma zeta_c_norm_pos (t : ℝ) : 0 < ‖riemannZeta (3/2 + Complex.I * t)‖ := by
   have h := zetacnot0 t
   exact norm_pos_iff.mpr h
 
@@ -4431,7 +4435,7 @@ lemma Zeta1_Zeta_Expand :
     (r1 r R1 R : ℝ)
     (hr1_pos : 0 < r1) (hr1_lt_r : r1 < r)
     (hr_pos : 0 < r) (hr_lt_R1 : r < R1) (hR1_pos : 0 < R1) (hR1_lt_R : R1 < R) (hR_lt_1 : R < 1),
-    let c := (3/2 : ℂ) + I * t;
+    let c := (3/2 : ℂ) + Complex.I * t;
     ∀ (hfin : (zerosetKfRc R1 c riemannZeta).Finite),
     ∀ z ∈ closedBall c r1 \ zerosetKfRc R1 c riemannZeta,
     ‖logDerivZeta z - ∑ ρ ∈ hfin.toFinset,
@@ -4459,11 +4463,11 @@ lemma Zeta1_Zeta_Expand :
     _ < b * |t| := mul_lt_mul_of_pos_left ht hb_pos
 
   -- Apply zeta32upper to get bound on |ζ| in the ball
-  have hbound_ball : ∀ s ∈ closedBall (3/2 + I * t) R, ‖riemannZeta s‖ < b * |t| := by
-    have hsubset : closedBall (3/2 + I * t) R ⊆ closedBall (3/2 + I * t) 1 :=
+  have hbound_ball : ∀ s ∈ closedBall (3/2 + Complex.I * t) R, ‖riemannZeta s‖ < b * |t| := by
+    have hsubset : closedBall (3/2 + Complex.I * t) R ⊆ closedBall (3/2 + Complex.I * t) 1 :=
       Metric.closedBall_subset_closedBall (le_of_lt hR_lt_1)
     intro s hs
-    have hs1 : s ∈ closedBall (3/2 + I * t) 1 := hsubset hs
+    have hs1 : s ∈ closedBall (3/2 + Complex.I * t) 1 := hsubset hs
     have ht2 : |t| > 2 := by linarith [ht]
     specialize hb t ht2
     exact hb s hs1
@@ -4472,8 +4476,8 @@ lemma Zeta1_Zeta_Expand :
   have hexp := hexp_lemma (b * |t|) hBgt1 hbound_ball hfin z hz
 
   -- Use properties of ζ at c and bounds from zeta32lower_log
-  have hζne : riemannZeta (3/2 + I * t) ≠ 0 := zetacnot0 t
-  have hζpos : (0 : ℝ) < ‖riemannZeta (3/2 + I * t)‖ := norm_pos_iff.mpr hζne
+  have hζne : riemannZeta (3/2 + Complex.I * t) ≠ 0 := zetacnot0 t
+  have hζpos : (0 : ℝ) < ‖riemannZeta (3/2 + Complex.I * t)‖ := norm_pos_iff.mpr hζne
 
   have hBpos : (0 : ℝ) < b * |t| := mul_pos (by linarith [hbgt1]) htpos
   have hBne : b * |t| ≠ 0 := ne_of_gt hBpos
@@ -4481,14 +4485,14 @@ lemma Zeta1_Zeta_Expand :
   have hbne : b ≠ 0 := ne_of_gt (by linarith [hbgt1])
 
   -- Key logarithmic bound using zeta32lower_log
-  have hlog_bound : Real.log (b * |t| / ‖riemannZeta (3/2 + I * t)‖) ≤
+  have hlog_bound : Real.log (b * |t| / ‖riemannZeta (3/2 + Complex.I * t)‖) ≤
                     Real.log |t| + Real.log b + A := by
     rw [Real.log_div hBne (ne_of_gt hζpos)]
     rw [Real.log_mul hbne htne]
     -- Apply zeta32lower_log bound
     have hA_bound := hA t
-    have : -Real.log ‖riemannZeta (3/2 + I * t)‖ ≤ A := by
-      have eq_neg : Real.log (1 / ‖riemannZeta (3/2 + I * t)‖) = -Real.log ‖riemannZeta (3/2 + I * t)‖ := by
+    have : -Real.log ‖riemannZeta (3/2 + Complex.I * t)‖ ≤ A := by
+      have eq_neg : Real.log (1 / ‖riemannZeta (3/2 + Complex.I * t)‖) = -Real.log ‖riemannZeta (3/2 + Complex.I * t)‖ := by
         rw [Real.log_div (by norm_num) (ne_of_gt hζpos)]
         simp
       rw [← eq_neg]
@@ -4517,7 +4521,6 @@ lemma Zeta1_Zeta_Expand :
             · exact hR1_pos
           have h_sq_div : R^2/R1 = R * (R/R1) := by
             field_simp [ne_of_gt hR1_pos]
-            ring
           rw [h_sq_div]
           have h_r_pos : (0 : ℝ) < R := by linarith [hR1_pos, h_gt]
           have : R * (R/R1) > R * 1 := by
@@ -4533,7 +4536,7 @@ lemma Zeta1_Zeta_Expand :
   calc ‖logDerivZeta z - ∑ ρ ∈ hfin.toFinset,
       ((analyticOrderAt riemannZeta ρ).toNat : ℂ) / (z - ρ)‖
       ≤ (16 * r^2 / ((r - r1)^3) +
-          1 / ((R^2 / R1 - R1) * Real.log (R / R1))) * Real.log (b * |t| / ‖riemannZeta (3/2 + I * t)‖) := hexp
+          1 / ((R^2 / R1 - R1) * Real.log (R / R1))) * Real.log (b * |t| / ‖riemannZeta (3/2 + Complex.I * t)‖) := hexp
     _ ≤ (16 * r^2 / ((r - r1)^3) +
           1 / ((R^2 / R1 - R1) * Real.log (R / R1))) * (Real.log |t| + Real.log b + A) := by
       exact mul_le_mul_of_nonneg_left hlog_bound hcoeff_nonneg
@@ -4554,7 +4557,7 @@ lemma helper_log_ratio_le_sum (b t x A : ℝ)
     _ = Real.log (b * |t|) + Real.log (1 / x) := by
       exact Real.log_mul (mul_ne_zero hb_ne ht_ne) h_inv_ne
     _ ≤ Real.log (b * |t|) + A := by
-      exact add_le_add_left hA (Real.log (b * |t|))
+      gcongr
     _ = Real.log b + Real.log |t| + A := by
       have hmul : Real.log (b * |t|) = Real.log b + Real.log |t| :=
     Real.log_mul hb_ne ht_ne
@@ -4611,10 +4614,10 @@ lemma helper_bound_sum_by_Klog (t b A : ℝ)
           simp [S, add_comm, add_left_comm, add_assoc]
     _
       ≤ Real.log (|t| + 2) + S := by
-      exact add_le_add_right hle_log S
+      gcongr
     _
       ≤ Real.log (|t| + 2) + (S / Real.log 5) * Real.log (|t| + 2) := by
-      exact add_le_add_left hS_le (Real.log (|t| + 2))
+      gcongr
     _ = (1 + S / Real.log 5) * Real.log (|t| + 2) := by
       ring
     _ = K * Real.log (|t| + 2) := by rfl
@@ -4625,7 +4628,7 @@ lemma Zeta1_Zeta_Expansion
     (hr1_pos : 0 < r1) (hr1_lt_r : r1 < r) (hr_lt_R1 : r < 5 / (6 : ℝ)) :
     ∃ C > 1,
     ∀ (t : ℝ) (ht : |t| > 3),
-    let c := (3/2 : ℂ) + I * t;
+    let c := (3/2 : ℂ) + Complex.I * t;
     ∀ (hfin : (zerosetKfRc (5 / (6 : ℝ)) c riemannZeta).Finite),
     ∀ z ∈ closedBall c r1 \ zerosetKfRc (5 / (6 : ℝ)) c riemannZeta,
     ‖logDerivZeta z - ∑ ρ ∈ hfin.toFinset,
@@ -4728,7 +4731,7 @@ lemma Zeta1_Zeta_Expansion
 
   have hsum_bound : Real.log |t| + S ≤ (1 + S / Real.log 3) * Real.log |t| := by
     have hstep : Real.log |t| + S ≤ Real.log |t| + (S / Real.log 3) * Real.log |t| :=
-      add_le_add_left hS_le (Real.log |t|)
+      by gcongr
     -- Real.log |t| + (S / Real.log 3) * Real.log |t| = (1 + S / Real.log 3) * Real.log |t|
     have h_factor : Real.log |t| + (S / Real.log 3) * Real.log |t| = (1 + S / Real.log 3) * Real.log |t| := by ring
     rw [← h_factor]

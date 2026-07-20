@@ -242,7 +242,8 @@ lemma lem_analDiv (R : ℝ) (hR_pos : 0 < R) (hR_lt_1 : R < 1) (w : ℂ)
     (h : ℂ → ℂ) (g : ℂ → ℂ)
     (hh : AnalyticAt ℂ h w) (hg : AnalyticAt ℂ g w) (hg_ne : g w ≠ 0) :
     AnalyticAt ℂ (fun z => h z / g z) w := by
-  simpa using hh.div hg hg_ne
+  change AnalyticAt ℂ (h / g) w
+  exact hh.div hg hg_ne
 
 lemma lem_denomAnalAt (S : Finset ℂ) (n : ℂ → ℕ)
     (hn_pos : ∀ s ∈ S, 0 < n s) (w : ℂ) (hw : w ∉ S) :
@@ -251,19 +252,15 @@ lemma lem_denomAnalAt (S : Finset ℂ) (n : ℂ → ℕ)
   constructor
   · -- First part: AnalyticAt
     -- Use Finset.analyticAt_prod
-    let f : ℂ → ℂ → ℂ := fun s z => (z - s) ^ (n s)
-    have h_each_analytic : ∀ s ∈ S, AnalyticAt ℂ (f s) w := by
+    have h_each_analytic : ∀ s ∈ S,
+        AnalyticAt ℂ (fun z : ℂ => (z - s) ^ (n s)) w := by
       intro s hs
-      simp only [f]
       -- Need to show AnalyticAt ℂ (fun z => (z - s) ^ (n s)) w
       have h_sub : AnalyticAt ℂ (fun z => z - s) w := by
         exact AnalyticAt.sub analyticAt_id analyticAt_const
       -- Apply pow with the natural number n s
       exact h_sub.pow (n s)
-    have h_prod := Finset.analyticAt_prod S h_each_analytic
-    convert h_prod using 1
-    ext z
-    simp [f]
+    exact Finset.analyticAt_fun_prod S h_each_analytic
   · -- Second part: nonzero product
     apply Finset.prod_ne_zero_iff.mpr
     intro s hs
@@ -815,7 +812,7 @@ lemma linear_pow_analytic (a b : ℂ) (n : ℕ) (z : ℂ) :
     -- b * w is analytic (scalar multiplication of identity)
     have h_mul : AnalyticAt ℂ (fun w => b * w) z := by
       have h_id : AnalyticAt ℂ (fun w => w) z := analyticAt_id
-      exact h_id.const_smul
+      fun_prop
     -- subtraction of analytic functions is analytic
     exact h_const.sub h_mul
   -- Powers of analytic functions are analytic
@@ -852,11 +849,7 @@ lemma bl_num_diff
         exact linear_pow_analytic (R : ℂ) (star ρ / (R : ℂ)) (analyticOrderAt f ρ).toNat z
 
       -- Use Finset.analyticAt_prod to combine the factors
-      have h_prod_analytic := Finset.analyticAt_prod h_finite_zeros.toFinset h_each_analytic
-      -- The result is AnalyticAt ℂ (fun w ↦ ∏ ρ ∈ h_finite_zeros.toFinset, factor_func ρ w) z
-      convert h_prod_analytic using 1
-      ext w
-      simp [factor_func]
+      exact Finset.analyticAt_fun_prod h_finite_zeros.toFinset h_each_analytic
 
     -- Analytic implies differentiable
     exact h_analytic.differentiableAt
@@ -1727,20 +1720,7 @@ lemma lem_mod_Bf_eq_mod_f_on_boundary (R R1 : ℝ)
 
     -- Rewrite numerator: R - z * star ρ / R = (R² - z * star ρ) / R
     have num_rewrite : (R : ℂ) - z * star ρ / (R : ℂ) = ((R : ℂ)^2 - z * star ρ) / (R : ℂ) := by
-      field_simp [ne_of_gt hR1_pos]
-      ring_nf
-      field_simp
-      ring_nf
-      norm_cast
-      rw [pow_two]
-      rw [mul_assoc R R R⁻¹]
-      -- rw [(mul_inv_cancel R)]
-      have : R * R⁻¹ = 1 := by
-        have : R > 0 := by linarith
-        -- apply mul_inv_cancel
-        field_simp
-      rw [this]
-      simp
+      field_simp [ne_of_gt (hR1_pos.trans hR1_lt_R)]
 
     rw [num_rewrite, Complex.norm_div]
 
@@ -1750,17 +1730,16 @@ lemma lem_mod_Bf_eq_mod_f_on_boundary (R R1 : ℝ)
       ring
 
     rw [factor_eq, Complex.norm_mul, norm_star, ←hz]
-    field_simp
     field_simp [hz, z_ne_rho]
 
-    have h_denom_ne_zero : R * ‖z - ρ‖ ≠ 0 := by
-      apply mul_ne_zero
-      -- Prove R is not zero
-      · linarith [hR1_pos, hR1_lt_R]
-      -- Prove the norm is not zero
-      · simp [norm_ne_zero_iff, sub_ne_zero, z_ne_rho]
-    -- field_simp can now use this fact to solve the goal.
-    field_simp [h_denom_ne_zero]
+    simp only [Complex.norm_real, Real.norm_of_nonneg (norm_nonneg z)]
+    rw [mul_comm ‖z - ρ‖ ‖z‖]
+    have hz_norm_ne : ‖z‖ ≠ 0 := by
+      rw [hz]
+      exact ne_of_gt (hR1_pos.trans hR1_lt_R)
+    have hsub_norm_ne : ‖z - ρ‖ ≠ 0 :=
+      norm_ne_zero_iff.mpr (sub_ne_zero.mpr z_ne_rho)
+    exact div_self (mul_ne_zero hz_norm_ne hsub_norm_ne)
 
 
   -- Apply this to show the product equals 1
@@ -2843,7 +2822,7 @@ lemma logDerivprod {K : Finset ℂ} {g : ℂ → ℂ → ℂ} {z : ℂ}
     (hg_diff : ∀ ρ ∈ K, DifferentiableAt ℂ (g ρ) z)
     (hg_ne : ∀ ρ ∈ K, g ρ z ≠ 0) :
     logDeriv (fun w ↦ ∏ ρ ∈ K, g ρ w) z = ∑ ρ ∈ K, logDeriv (g ρ) z := by
-  exact logDeriv_prod K g z hg_ne hg_diff
+  exact logDeriv_prod hg_ne hg_diff
 
 -- Lemma 10: logDerivdiv
 lemma logDerivdiv {h g : ℂ → ℂ} {z : ℂ}
@@ -2931,7 +2910,7 @@ lemma blaschke_num_diff_nonzero {R R1 : ℝ} {f : ℂ → ℂ}
     have hposR : 0 < R := hR1_pos.trans hR1_lt_R
     have hposRR : 0 < R * R := by nlinarith [hposR]
     have hlt : R1 * R < R * R := by
-      exact (mul_lt_mul_right hposR).mpr hR1_lt_R
+      nlinarith
     exact (lt_irrefl _ (lt_of_le_of_lt hle' hlt))
   · -- Differentiability: linear function
     have h_const : DifferentiableAt ℂ (fun _ : ℂ => (R : ℂ)) z := by
@@ -3007,7 +2986,10 @@ lemma blaschke_pow_diff_nonzero {R R1 : ℝ} {f : ℂ → ℂ}
   rcases hfrac with ⟨hne, hdiff⟩
   constructor
   · exact pow_ne_zero _ hne
-  · simpa using hdiff.pow ((analyticOrderAt f ρ).toNat)
+  · change DifferentiableAt ℂ
+      ((fun w : ℂ => ((R - (star ρ) * w / R) / (w - ρ))) ^
+        (analyticOrderAt f ρ).toNat) z
+    exact hdiff.pow ((analyticOrderAt f ρ).toNat)
 
 -- Lemma 16: blaschke_prod_diff_nonzero
 lemma blaschke_prod_diff_nonzero {R R1 : ℝ} {f : ℂ → ℂ}
@@ -3212,7 +3194,8 @@ lemma eventuallyEq_mul_right_fun {α β} {l : Filter α} [Mul β]
   {f g h : α → β} (hfg : f =ᶠ[l] g) :
   (fun x => f x * h x) =ᶠ[l] (fun x => g x * h x) := by
   have hhh : h =ᶠ[l] h := Filter.EventuallyEq.rfl
-  simpa using (Filter.EventuallyEq.mul (l := l) (f := f) (f' := h) (g := g) (g' := h) hfg hhh)
+  change f * h =ᶠ[l] g * h
+  exact hfg.mul hhh
 
 lemma inv_prod_complex {ι} (s : Finset ι) (f : ι → ℂ) : (∏ x ∈ s, f x)⁻¹ = ∏ x ∈ s, (f x)⁻¹ := by
   classical

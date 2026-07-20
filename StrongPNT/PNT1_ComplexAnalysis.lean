@@ -398,11 +398,10 @@ theorem analyticWithinAt_to_analyticAt_aux {f : ℂ → ℂ} {S : Set ℂ} {z : 
     have : y ∈ EMetric.ball 0 (ENNReal.ofReal ε) := by
       apply EMetric.ball_subset_ball (min_le_right r (ENNReal.ofReal ε)) hy
 
-    have ε_nn : ENNReal.ofReal ε = ↑(ε.toNNReal) := by
-      simp [ENNReal.ofReal, hε_pos.le]
-    rw [ε_nn] at this
-    rw [@Metric.emetric_ball_nnreal] at this
-    simpa [Metric.mem_ball, dist_self_add_right, Real.toNNReal_of_nonneg hε_pos.le]
+    have h_edist : ENNReal.ofReal (dist y 0) < ENNReal.ofReal ε := by
+      simpa [Metric.mem_eball, edist_dist] using (EMetric.mem_ball.mp this)
+    have hdist : dist y 0 < ε := (ENNReal.ofReal_lt_ofReal_iff hε_pos).mp h_edist
+    simpa [dist_zero_right] using hdist
 
   · -- Prove y ∈ EMetric.ball 0 r
     exact EMetric.ball_subset_ball (min_le_left r (ENNReal.ofReal ε)) hy
@@ -694,7 +693,7 @@ lemma lem_ordernatcast2 {R : ℝ} (hR_pos : 0 < R) (f : ℂ → ℂ) (hf0 : f 0 
   by_cases hEZ : (∀ᶠ z in nhds (0 : ℂ), f z = 0)
   · -- If f is eventually zero, then (fderiv f 0) 1 = 0 and g is 0 on a nbhd; hence analytic.
     -- The zero set is a neighborhood of 0
-    have hU : {z : ℂ | f z = 0} ∈ nhds (0 : ℂ) := by simpa using hEZ
+    have hU : {z : ℂ | f z = 0} ∈ nhds (0 : ℂ) := hEZ
     -- Turn it into an eventual equality
     have hf_eq_zero : f =ᶠ[nhds (0 : ℂ)] (fun _ : ℂ => 0) := by
       refine (Filter.eventuallyEq_iff_exists_mem).2 ?_
@@ -734,7 +733,7 @@ lemma lem_ordernatcast2 {R : ℝ} (hR_pos : 0 < R) (f : ℂ → ℂ) (hf0 : f 0 
     -- Obtain a local factorization from the order lemma
     rcases lem_ordernatcast2_old f hf_at0 hf0 h_notEZ with ⟨h0, h0_at0, hfac_ev⟩
     -- Turn eventual equality into EventuallyEq for derivatives
-    have hV : {z : ℂ | f z = z * h0 z} ∈ nhds (0 : ℂ) := by simpa using hfac_ev
+    have hV : {z : ℂ | f z = z * h0 z} ∈ nhds (0 : ℂ) := hfac_ev
     have h_eq_nhds : f =ᶠ[nhds (0 : ℂ)] (fun z => z * h0 z) :=
       (Filter.eventuallyEq_iff_exists_mem).2 ⟨{z : ℂ | f z = z * h0 z}, hV, by
         intro z hz; simpa [Set.mem_setOf_eq] using hz⟩
@@ -914,10 +913,9 @@ lemma lem_MaxModP (R : ℝ) (hR : R > 0) (h : ℂ → ℂ) (h_analytic : Analyti
 
   -- Establish the maximum condition in terms of norm
   have h_max_on : IsMaxOn (norm ∘ h) (ballDR R) w := by
+    rw [isMaxOn_iff]
     intro z hz
-    simp only [Function.comp_apply]
-    -- Since norm is deprecated in favor of norm, they should be definitionally equal
-    convert hw_max z hz
+    exact hw_max z hz
 
   -- Apply the main maximum modulus theorem
   have h_eq := Complex.norm_eqOn_closure_of_isPreconnected_of_isMaxOn h_preconnected h_open h_diff_cont hw_in_DR h_max_on
@@ -1525,7 +1523,6 @@ norm (f z) ≤ (2 * r / (R - r)) * M := by
   -- Rearrange (2 * M * r) / (R - r) to (2 * r / (R - r)) * M
   have h_rearrange : (2 * M * r) / (R - r) = (2 * r / (R - r)) * M := by
     field_simp
-    ring
 
   -- Apply the rearrangement
   rw [← h_rearrange]
@@ -1639,8 +1636,8 @@ deriv f z = (1 / (2 * Real.pi * I)) • ∮ w in C(0, r_int), (w - z)⁻¹ ^ 2 �
   -- Show z is in the ball of radius r_int
   have hz_in_ball : z ∈ Metric.ball (0 : ℂ) r_int := by
     apply Metric.mem_ball.mpr
-    have h1 : ‖z - 0‖ ≤ r_z := Metric.mem_closedBall.mp hz
-    simp only [sub_zero] at h1
+    have h1 : dist z 0 ≤ r_z := Metric.mem_closedBall.mp hz
+    simp only [dist_eq_norm, sub_zero] at h1
     have h2 : ‖z‖ < r_int := lt_of_le_of_lt h1 h_r_z_lt_r_int
     rwa [dist_eq_norm, sub_zero]
 
@@ -1797,8 +1794,7 @@ lemma mul_comm_div_cancel (a b : ℂ) (ha : a ≠ 0) (hb : b ≠ 0) : a * b / (b
 
 lemma complex_coeff_I_cancel : (1 : ℂ) / (2 * Real.pi * I) * I = 1 / (2 * Real.pi) := by
   field_simp [Complex.I_ne_zero, Real.pi_pos.ne']
-  -- After field_simp, we have: I * (2 * ↑Real.pi) / (2 * ↑Real.pi * I) = 1
-  exact mul_comm_div_cancel I (2 * ↑Real.pi) Complex.I_ne_zero (by norm_num; exact Real.pi_pos.ne')
+  exact div_self Complex.I_ne_zero
 
 lemma factor_I_from_integrand (f : ℂ → ℂ) (r_int : ℝ) (z : ℂ) :
   ∫ (t : ℝ) in Set.Icc 0 (2 * Real.pi), I * ↑r_int * Complex.exp (I * ↑t) * (↑r_int * Complex.exp (I * ↑t) - z)⁻¹ ^ 2 * f (↑r_int * Complex.exp (I * ↑t)) =
@@ -2422,7 +2418,6 @@ norm ((f (r_int * Complex.exp (I * t)) * (r_int * Complex.exp (I * t))) / ((r_in
     have h_R_sub_r_pos : 0 < R_analytic - r_int := by linarith [h_r_int_lt_R_analytic]
     have h_r_sub_r_pos : 0 < r_int - r_z := by linarith [h_r_z_lt_r_int]
     field_simp [ne_of_gt h_R_sub_r_pos, ne_of_gt (pow_pos h_r_sub_r_pos 2)]
-    ring
 
   -- Apply transitivity
   rw [h4] at h3
@@ -2510,7 +2505,7 @@ lemma continuous_f_parameterized {f : ℂ → ℂ} {R r : ℝ}     (hf_domain : 
     exact hparam_range t
 
   -- Convert ContinuousOn Set.univ to Continuous using the equivalence
-  rwa [← continuous_iff_continuousOn_univ] at hcomp_on
+  exact continuousOn_univ.mp hcomp_on
 
 lemma continuous_denominator_parameterized (r : ℝ) (z : ℂ) : Continuous (fun t : ℝ => (r * Complex.exp (I * t) - z) ^ 2) := by
   -- Break down the function: (fun t => (r * Complex.exp (I * t) - z) ^ 2)
@@ -2898,9 +2893,10 @@ lemma lem_ineq_R_plus_r_sqM {M r R : ℝ}
   -- Multiply both sides by 4 * M
   have h_mult := mul_lt_mul_of_pos_right h_ineq h_4M_pos
   -- Rearrange to get the desired form
-  convert h_mult using 1
-  · ring
-  · ring
+  calc
+    4 * (R + r) ^ 2 * M = (R + r) ^ 2 * (4 * M) := by ring
+    _ < 4 * R ^ 2 * (4 * M) := h_mult
+    _ = 16 * R ^ 2 * M := by ring
 
 lemma lem_simplify_final_bound {M r R : ℝ}
     (hM_pos : 0 < M)
@@ -3027,10 +3023,7 @@ lemma def_If_w
 
 lemma continuous_vertical_line (a : ℂ) :
   Continuous (fun τ : ℝ => ((a.re : ℂ) + Complex.I * (τ : ℂ))) := by
-  have hconst : Continuous (fun _ : ℝ => (a.re : ℂ)) := continuous_const
-  have hmul : Continuous (fun τ : ℝ => (Complex.I : ℂ) * (τ : ℂ)) :=
-    continuous_const.mul Complex.continuous_ofReal
-  simpa using hconst.add hmul
+  fun_prop
 
 lemma norm_re_add_I_mul_le_norm (a : ℂ) {τ : ℝ} (hτ : |τ| ≤ |a.im|) :
   ‖((a.re : ℂ) + Complex.I * (τ : ℂ))‖ ≤ ‖a‖ := by
@@ -3060,7 +3053,7 @@ lemma norm_re_add_I_mul_le_norm (a : ℂ) {τ : ℝ} (hτ : |τ| ≤ |a.im|) :
     simpa using (sq_le_sq.mpr hτ)
   -- compare squares
   have hsq_le : ‖z1‖ ^ 2 ≤ ‖a‖ ^ 2 := by
-    have : a.re ^ 2 + τ ^ 2 ≤ a.re ^ 2 + a.im ^ 2 := add_le_add_left hτ_sq _
+    have : a.re ^ 2 + τ ^ 2 ≤ a.re ^ 2 + a.im ^ 2 := by gcongr
     simpa [hsq_z1, hz1_re, hz1_im, hsq_a] using this
   -- deduce inequality of norms
   have hnonneg : 0 ≤ ‖a‖ := norm_nonneg _
@@ -3124,9 +3117,8 @@ lemma vertical_intervalIntegrable_of_mem_ball
     exact (closedBall_mono_center0 (le_of_lt hr1_lt_R)) hg_mem_r1
   -- Compose continuity to get continuity of the integrand on the interval
   have hcomp : ContinuousOn (fun τ : ℝ => f (g τ)) (Set.uIcc (0 : ℝ) a.im) := by
-    -- use `ContinuousOn.comp` with `g := f`, `f := g`
-    simpa [Function.comp, g] using
-      (ContinuousOn.comp (hg := hf_cont) (hf := hg_cont) (h := hg_maps))
+    change ContinuousOn (f ∘ g) (Set.uIcc (0 : ℝ) a.im)
+    exact hf_cont.comp hg_cont hg_maps
   -- Continuous on the interval implies interval integrable
   have hInt : IntervalIntegrable (fun τ : ℝ => f (g τ)) volume (0 : ℝ) a.im :=
     ContinuousOn.intervalIntegrable (u := fun τ : ℝ => f (g τ)) (a := 0) (b := a.im) hcomp
@@ -4088,7 +4080,7 @@ lemma bound_on_Err
     -- path into the closed ball R
     let γ : ℝ → ℂ := fun t => (t : ℂ) + Complex.I * z.im
     have hγ_cont : Continuous γ := by
-      simpa [γ] using (Complex.continuous_ofReal.add continuous_const)
+      fun_prop
     have hz_mem : ((z.re : ℂ) + Complex.I * z.im) ∈ Metric.closedBall (0 : ℂ) r1 := by
       simp only [Metric.mem_closedBall, dist_zero_right]
       rw [show (z.re : ℂ) + Complex.I * z.im = z.re + z.im * Complex.I by ring]
@@ -4122,8 +4114,8 @@ lemma bound_on_Err
         exact hseg_subset (Set.mem_image_of_mem _ ht)
       exact (closedBall_mono_center0 (le_of_lt hr1_lt_R)) himg_r1
     have hcont_on : ContinuousOn (fun t => f (γ t)) (Set.uIcc z.re (z + h).re) := by
-      simpa [Function.comp, γ] using
-        (ContinuousOn.comp (hf_cont) (hγ_cont.continuousOn) hmaps)
+      change ContinuousOn (f ∘ γ) (Set.uIcc z.re (z + h).re)
+      exact hf_cont.comp hγ_cont.continuousOn hmaps
     -- real-valued continuous map r(t) := ‖f (γ t) - f z‖
     have hψ : Continuous (fun w : ℂ => ‖w - f z‖) :=
       (continuous_id.sub continuous_const).norm
@@ -4185,8 +4177,8 @@ lemma bound_on_Err
       exact (closedBall_mono_center0 (le_of_lt hr1_lt_R)) this
     have hf_cont : ContinuousOn f (Metric.closedBall (0 : ℂ) R) := hf.continuousOn
     have hcont_on : ContinuousOn (fun τ => f (γv τ)) (Set.uIcc z.im (z + h).im) := by
-      simpa [Function.comp, γv] using
-        (ContinuousOn.comp (hf_cont) (hγv_cont.continuousOn) hmaps)
+      change ContinuousOn (f ∘ γv) (Set.uIcc z.im (z + h).im)
+      exact hf_cont.comp hγv_cont.continuousOn hmaps
     have hψ : Continuous (fun w : ℂ => ‖w - f z‖) :=
       (continuous_id.sub continuous_const).norm
     have hR_cont : ContinuousOn (fun τ => ‖f (γv τ) - f z‖) (Set.uIcc z.im (z + h).im) := by
@@ -4627,7 +4619,7 @@ lemma limit_of_S_is_zero
             have vertical_bound : ‖(h.re : ℝ) + Complex.I * (τ - z.im)‖ ≤ |h.re| + |τ - z.im| :=
               abs_vertical_core z h τ
             have sum_bound : |h.re| + |τ - z.im| ≤ |h.re| + |h.im| := by
-              exact add_le_add_left τ_bound _
+              gcongr
             have norm_bound := sum_abs_le_two_mul (Complex.abs_re_le_norm h) (Complex.abs_im_le_norm h)
             have h_bound : ‖h‖ < δ₁ / 2 := hh_norm
             have final_bound := two_norm_lt_of_norm_lt_half hδ₁_pos h_bound
@@ -4659,7 +4651,7 @@ lemma eventually_corner_and_sum_in_closedBall {z : ℂ} {R' : ℝ}
     simpa [Metric.mem_ball, Complex.dist_eq, sub_zero] using hhball
   -- First membership: z + h ∈ closedBall 0 R'
   have hsum_lt : ‖z‖ + ‖h‖ < R' := by
-    have htemp : ‖z‖ + ‖h‖ < ‖z‖ + (R' - ‖z‖) := add_lt_add_left hnorm_lt _
+    have htemp : ‖z‖ + ‖h‖ < ‖z‖ + (R' - ‖z‖) := by gcongr
     simpa [sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using htemp
   have hzph_le : ‖z + h‖ ≤ R' :=
     le_of_lt (lt_of_le_of_lt (norm_add_le _ _) hsum_lt)
@@ -4684,7 +4676,9 @@ lemma eventually_corner_and_sum_in_closedBall {z : ℂ} {R' : ℝ}
   have hwz_le : ‖w - z‖ ≤ ‖h‖ := by
     simpa [hwz_abs2] using (Complex.abs_re_le_norm h)
   have hw_le'' : ‖w‖ ≤ ‖h‖ + ‖z‖ := by
-    exact le_trans tri (add_le_add_right hwz_le _)
+    calc
+      ‖w‖ ≤ ‖w - z‖ + ‖z‖ := tri
+      _ ≤ ‖h‖ + ‖z‖ := by gcongr
   have hw_lt : ‖w‖ < R' := by
     have : ‖h‖ + ‖z‖ < R' := by simpa [add_comm] using hsum_lt
     exact lt_of_le_of_lt hw_le'' this
@@ -4711,7 +4705,7 @@ lemma limit_of_Err_ratio_is_zero
     have hcont : Continuous fun x : ℝ => |(2 : ℝ) * x| :=
       (continuous_const.mul continuous_id).abs
     have h0 := hcont.tendsto (0 : ℝ)
-    simpa [mul_zero, abs_zero] using h0.comp hS
+    convert h0.comp hS using 1 <;> simp [Function.comp_def]
   -- Lower bound: 0 ≤ ‖g h‖ holds everywhere
   have h_lower_nonneg : ∀ᶠ h in 𝓝 0, 0 ≤ ‖g h‖ :=
     Filter.Eventually.of_forall (fun _ => by simpa [g] using (norm_nonneg (g _)))
@@ -4727,7 +4721,7 @@ lemma limit_of_Err_ratio_is_zero
   have hR'_lt_R : R' < R := by
     have hδlt : δ < R - r1 := by
       simpa [δ] using (half_lt_self (sub_pos.mpr hr1_lt_R))
-    have : r1 + δ < r1 + (R - r1) := add_lt_add_left hδlt r1
+    have : r1 + δ < r1 + (R - r1) := by gcongr
     simpa [R', sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using this
   -- z lies in the R'-closed ball
   have hz_le_r1 : ‖z‖ ≤ r1 := by
@@ -4938,8 +4932,7 @@ lemma hasDerivAt_of_local_decomposition' (g : ℂ → ℂ) (z F : ℂ)
     (hdecomp.filter_mono (nhdsWithin_le_nhds : 𝓝[≠] (0:ℂ) ≤ 𝓝 (0:ℂ)))
   -- On the punctured neighborhood, we also have eventually h ≠ 0
   have h_ne0 : ∀ᶠ h in 𝓝[≠] (0:ℂ), h ≠ 0 := by
-    simpa [Set.mem_setOf_eq] using
-      (self_mem_nhdsWithin : {h : ℂ | h ≠ 0} ∈ 𝓝[{h : ℂ | h ≠ 0}] (0:ℂ))
+    exact self_mem_nhdsWithin
   -- On (nhds[≠] 0), the slope equals F + Err h / h
   have h_eq_slope : ∀ᶠ h in 𝓝[≠] (0:ℂ),
       h⁻¹ • (g (z + h) - g z) = F + Err_func h / h := by
@@ -4980,42 +4973,7 @@ lemma hasDerivAt_of_local_decomposition' (g : ℂ → ℂ) (z F : ℂ)
 lemma uniqueDiffWithinAt_convex_complex {s : Set ℂ} (hconv : Convex ℝ s)
     (hs : (interior s).Nonempty) {x : ℂ} (hx : x ∈ closure s) :
     UniqueDiffWithinAt ℂ s x := by
-  -- Use the real-field result for the underlying real vector space
-  have hR : UniqueDiffWithinAt ℝ s x :=
-    uniqueDiffWithinAt_convex (G := ℂ) (conv := hconv) (hs := hs) (x := x) (hx := hx)
-  -- Density for the real-span of the real tangent cone
-  have dR : Dense ((Submodule.span ℝ (tangentConeAt ℝ s x) : Submodule ℝ ℂ) : Set ℂ) := by
-    simpa using (hR.dense_tangentConeAt)
-  -- The real tangent cone is included in the complex tangent cone
-  have h_tc_subset : tangentConeAt ℝ s x ⊆ tangentConeAt ℂ s x := by
-    intro y hy
-    rcases hy with ⟨c, d, hmem, hctend, hsmullim⟩
-    refine ⟨(fun n => (c n : ℂ)), d, hmem, ?_, ?_⟩
-    · -- norms are preserved under coercion ℝ → ℂ
-      simpa [Complex.norm_real] using hctend
-    · -- scalar multiplications agree when viewing ℂ as an ℝ-module
-      simpa [Complex.real_smul] using hsmullim
-  -- Compare spans: the ℝ-span is included in the ℝ-restriction of the ℂ-span
-  set TC : Set ℂ := tangentConeAt ℂ s x
-  set Sℂ : Submodule ℂ ℂ := Submodule.span ℂ TC
-  set Sℝ : Submodule ℝ ℂ := Sℂ.restrictScalars ℝ
-  have h_span_le : (Submodule.span ℝ (tangentConeAt ℝ s x) : Submodule ℝ ℂ) ≤ Sℝ := by
-    -- it suffices to show the generators are in Sℝ
-    refine Submodule.span_le.mpr ?_
-    intro v hv
-    have hv' : v ∈ TC := h_tc_subset hv
-    have : v ∈ Sℂ := Submodule.subset_span hv'
-    simpa [Sℝ] using this
-  -- From density of the smaller set, deduce density of the larger (as sets)
-  have hsubset_sets :
-      ((Submodule.span ℝ (tangentConeAt ℝ s x) : Submodule ℝ ℂ) : Set ℂ)
-        ⊆ ((Sℂ : Submodule ℂ ℂ) : Set ℂ) := by
-    intro z hz
-    have hz' : z ∈ Sℝ := h_span_le hz
-    simpa [Sℝ] using hz'
-  have dC : Dense ((Sℂ : Submodule ℂ ℂ) : Set ℂ) := dR.mono hsubset_sets
-  -- Conclude the complex version
-  exact ⟨dC, hx⟩
+  exact uniqueDiffWithinAt_convex_of_isRCLikeNormedField hconv hs hx
 
 lemma interior_closedBall_nonempty_of_pos {R : ℝ} (hR_pos : 0 < R) :
     (interior (Metric.closedBall (0 : ℂ) R)).Nonempty := by
@@ -5075,7 +5033,7 @@ lemma If_is_differentiable_on
       have hδlt : δ < R - r1 := by
         have : 0 < R - r1 := sub_pos.mpr hr1_lt_R
         simpa [δ] using (half_lt_self this)
-      have : r1 + δ < r1 + (R - r1) := add_lt_add_left hδlt r1
+      have : r1 + δ < r1 + (R - r1) := by gcongr
       simpa [R', sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using this
     have hr1_lt_R' : r1 < R' := by
       have : r1 < r1 + δ := by simpa [add_comm, add_left_comm, add_assoc, R', δ] using (lt_of_le_of_lt (le_of_eq rfl) (add_lt_add_left hδ_pos r1))
@@ -5182,7 +5140,7 @@ lemma I_is_antiderivative
   have hR_mid_lt_R' : R_mid < R' := by
     have hδlt : δ < R' - r1 := by
       simpa [δ] using (half_lt_self (sub_pos.mpr hr1_lt_R'))
-    have : r1 + δ < r1 + (R' - r1) := add_lt_add_left hδlt r1
+    have : r1 + δ < r1 + (R' - r1) := by gcongr
     simpa [R_mid, sub_eq_add_neg, add_comm, add_left_comm, add_assoc] using this
   -- Define J as the primitive of L on radius R_mid with outer radius R'
   let J : ℂ → ℂ :=
@@ -5362,7 +5320,8 @@ lemma H_derivative_quotient_rule
   have hF_diff : DifferentiableAt ℂ (fun w => Complex.exp (J w)) z := hJ_diff.cexp
   -- apply the quotient rule for derivatives
   have h := deriv_div (hc := hF_diff) (hd := hB_diff) (hx := hB_nz)
-  simpa [H_auxiliary, mul_comm] using h
+  change deriv ((fun w => Complex.exp (J w)) / B) z = _
+  simpa [mul_comm] using h
 
 lemma exp_I_derivative_chain_rule
     {r1 R' R : ℝ}
@@ -5381,6 +5340,7 @@ lemma exp_I_derivative_chain_rule
   have hJ_has : HasDerivAt J (deriv J z) z := hJ_diff.hasDerivAt
   have hcomp := (Complex.hasDerivAt_exp (J z)).comp z hJ_has
   -- extract the derivative
+  change deriv (Complex.exp ∘ J) z = deriv J z * Complex.exp (J z)
   simpa [mul_comm] using hcomp.deriv
 
 lemma H_derivative_calc
@@ -5492,7 +5452,8 @@ by
       (Metric.closedBall (0 : ℂ) r1) :=
     hExp_comp.div hB_diff_r1 hB_ne_zero_r1
   -- unfold definition of H_auxiliary
-  simpa [H_auxiliary] using hdiv
+  change DifferentiableOn ℂ ((fun z => Complex.exp (J z)) / B) (Metric.closedBall (0 : ℂ) r1)
+  exact hdiv
 
 lemma hasDerivAt_H_auxiliary_zero_on_closedBall
     {r1 R' R : ℝ}
@@ -5528,7 +5489,8 @@ lemma hasDerivAt_H_auxiliary_zero_on_closedBall
   have hd_diff : DifferentiableAt ℂ B z := (hB' z hzR).differentiableAt
   -- DifferentiableAt for H and then HasDerivAt with deriv coefficient
   have hH_diff : DifferentiableAt ℂ (H_auxiliary hr1_pos hr1_lt_R' hR'_lt_R hR_lt_one hB hB_ne_zero J) z := by
-    simpa [H_auxiliary] using hc_diff.div hd_diff hBnz
+    change DifferentiableAt ℂ ((fun w => Complex.exp (J w)) / B) z
+    exact hc_diff.div hd_diff hBnz
   have hH_has : HasDerivAt (H_auxiliary hr1_pos hr1_lt_R' hR'_lt_R hR_lt_one hB hB_ne_zero J)
       (deriv (H_auxiliary hr1_pos hr1_lt_R' hR'_lt_R hR_lt_one hB hB_ne_zero J) z) z :=
     hH_diff.hasDerivAt
@@ -5540,17 +5502,8 @@ lemma fderivWithin_eq_zero_of_derivWithin_eq_zero {s : Set ℂ} {f : ℂ → ℂ
     (hdiff : DifferentiableWithinAt ℂ f s x)
     (hderiv : derivWithin f s x = 0) :
     fderivWithin ℂ f s x = 0 := by
-  -- Relate fderivWithin and derivWithin in the scalar case
-  have h₁ : fderivWithin ℂ f s x =
-      ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ) (derivWithin f s x) := by
-    simpa using
-      (derivWithin_fderivWithin (𝕜 := ℂ) (f := f) (s := s) (x := x)).symm
-  have h₂ : fderivWithin ℂ f s x =
-      ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ) (0 : ℂ) := by
-    simpa [hderiv] using h₁
-  have hsmul0 : ContinuousLinearMap.smulRight (1 : ℂ →L[ℂ] ℂ) (0 : ℂ) = 0 := by
-    ext; simp [ContinuousLinearMap.smulRight_apply]
-  exact h₂.trans hsmul0
+  rw [← derivWithin_fderivWithin, hderiv]
+  simp
 
 lemma hasDerivWithinAt_of_hasDerivAt {f : ℂ → ℂ} {s : Set ℂ} {x : ℂ}
     (h : HasDerivAt f 0 x) : HasDerivWithinAt f 0 s x := by
