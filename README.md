@@ -1,6 +1,6 @@
 # *The strong Prime Number Theorem*
 
-[![Blueprint](https://img.shields.io/badge/Blueprint-web-blue?style=for-the-badge)](https://math-inc.github.io/strongpnt/blueprint) [![Blueprint PDF](https://img.shields.io/badge/Blueprint-PDF-red?style=for-the-badge)](https://math-inc.github.io/strongpnt/blueprint.pdf) [![Dependency graph](https://img.shields.io/badge/Dependency-Graph-orange?style=for-the-badge)](https://math-inc.github.io/strongpnt/blueprint/dep_graph_document.html) [![Docs](https://img.shields.io/badge/Docs-blueviolet?style=for-the-badge)](https://math-inc.github.io/strongpnt/docs/) [![Math Inc.](https://img.shields.io/badge/MathInc-website-9cf?style=for-the-badge)](https://www.math.inc/)
+[![Math Inc.](https://img.shields.io/badge/MathInc-website-9cf?style=for-the-badge)](https://www.math.inc/)
 
 This repository contains an AI-generated Lean formalization of the strong Prime Number Theorem (PNT) and the complex-analysis infrastructure used in its proof.
 
@@ -13,14 +13,8 @@ Most of the statements and proofs were produced by Gauss, an autoformalization a
 - Scale: ≈25k lines of Lean and ≈1.1k theorems/definitions.
 - Time to completion: three weeks.
 
-![Blueprint dependency graph](blueprint/blueprint_screenshot.png)
-
 ## Links
 
-- [Blueprint](https://math-inc.github.io/strongpnt/blueprint)
-- [Blueprint (PDF)](https://math-inc.github.io/strongpnt/blueprint.pdf)
-- [Dependency graph](https://math-inc.github.io/strongpnt/blueprint/dep_graph_document.html)
-- [Documentation](https://math-inc.github.io/strongpnt/docs/)
 - [Math Inc.](https://www.math.inc/)
 - [Gauss (autoformalization agent)](https://www.math.inc/gauss)
 
@@ -33,7 +27,6 @@ Most of the statements and proofs were produced by Gauss, an autoformalization a
 **Repository layout:**
 
 - [`StrongPNT/`](StrongPNT/) - principal Lean source files produced or adapted for this project.
-- [`blueprint/`](blueprint/) - LaTeX blueprint and content used by the autoformalizer.
 
 ## Useful commands
 
@@ -41,16 +34,4 @@ Compile the Lean files (requires [`Lean`](https://docs.lean-lang.org/lean4/doc/q
 
 ```sh
 lake build
-```
-
-Build the blueprint PDF (requires [`uv`](https://docs.astral.sh/uv/)):
-
-```sh
-uvx leanblueprint pdf
-```
-
-Build and serve the blueprint website:
-
-```sh
-uvx leanblueprint web && uvx leanblueprint serve
 ```

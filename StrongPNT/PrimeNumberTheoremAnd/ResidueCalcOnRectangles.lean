@@ -1,4 +1,3 @@
-import Architect
 import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.Analysis.Complex.Convex
 import Mathlib.Analysis.Complex.RemovableSingularity
@@ -27,24 +26,15 @@ noncomputable def HIntegral' (f : ℂ → E) (x₁ x₂ y : ℝ) : E :=
 noncomputable def VIntegral' (f : ℂ → E) (x y₁ y₂ : ℝ) : E :=
     (1 / (2 * π * I)) • VIntegral f x y₁ y₂
 
-lemma HIntegral_symm :
+theorem HIntegral_symm :
     HIntegral f x₁ x₂ y = -HIntegral f x₂ x₁ y := integral_symm _ _
 
-lemma VIntegral_symm :
+theorem VIntegral_symm :
     VIntegral f x y₁ y₂ = -VIntegral f x y₂ y₁ := by
   simp_rw [VIntegral, integral_symm y₁ y₂, smul_neg, neg_neg]
 
 /-- A `RectangleIntegral` of a function `f` is one over a rectangle
   determined by `z` and `w` in `ℂ`. -/
-@[blueprint
-  (title := "RectangleIntegral")
-  (statement := /--
-  A RectangleIntegral of a function $f$ is one over a rectangle
-  determined by $z$ and $w$ in $\C$.
-  We will sometimes denote it by $\int_{z}^{w} f$.
-  (There is also a primed version, which is
-  $1/(2\pi i)$ times the original.)
-  -/)]
 noncomputable def RectangleIntegral (f : ℂ → E) (z w : ℂ) : E :=
     HIntegral f z.re w.re z.im - HIntegral f z.re w.re w.im +
     VIntegral f w.re z.im w.im - VIntegral f z.re z.im w.im
@@ -55,51 +45,24 @@ noncomputable abbrev RectangleIntegral' (f : ℂ → E) (z w : ℂ) : E :=
     (1 / (2 * π * I)) • RectangleIntegral f z w
 
 /- An UpperUIntegral is the integral of a function over a |\_| shape. -/
-@[blueprint
-  (title := "UpperUIntegral")
-  (statement := /--
-  An UpperUIntegral of a function $f$ comes from
-  $\sigma+i\infty$ down to $\sigma+iT$, over to
-  $\sigma'+iT$, and back up to $\sigma'+i\infty$. -/)]
 noncomputable def UpperUIntegral (f : ℂ → E) (σ σ' T : ℝ) : E :=
     HIntegral f σ σ' T +
     I • (∫ y : ℝ in Ici T, f (σ' + y * I)) -
     I • (∫ y : ℝ in Ici T, f (σ + y * I))
 
 /- A LowerUIntegral is the integral of a function over a |-| shape. -/
-@[blueprint
-  (title := "LowerUIntegral")
-  (statement := /--
-  A LowerUIntegral of a function $f$ comes from
-  $\sigma-i\infty$ up to $\sigma-iT$, over to
-  $\sigma'-iT$, and back down to $\sigma'-i\infty$.
-  -/)]
 noncomputable def LowerUIntegral (f : ℂ → E) (σ σ' T : ℝ) : E :=
     HIntegral f σ σ' (-T) -
     I • (∫ y : ℝ in Iic (-T), f (σ' + y * I)) +
     I • (∫ y : ℝ in Iic (-T), f (σ + y * I))
 
-blueprint_comment /--
-It is very convenient to define integrals along vertical lines
-in the complex plane, as follows.
--/
-@[blueprint
-  (title := "VerticalIntegral")
-  (statement := /--
-  Let $f$ be a function from $\mathbb{C}$ to $\mathbb{C}$,
-  and let $\sigma$ be a real number. Then we define
-  $$\int_{(\sigma)}f(s)ds =
-    \int_{\sigma-i\infty}^{\sigma+i\infty}f(s)ds.$$
-  -/)]
 noncomputable def VerticalIntegral (f : ℂ → E) (σ : ℝ) : E :=
     I • ∫ t : ℝ, f (σ + t * I)
 
-blueprint_comment /--
-We also have a version with a factor of $1/(2\pi i)$. -/
 noncomputable abbrev VerticalIntegral' (f : ℂ → E) (σ : ℝ) : E :=
     (1 / (2 * π * I)) • VerticalIntegral f σ
 
-lemma verticalIntegral_split_three (a b : ℝ)
+theorem verticalIntegral_split_three (a b : ℝ)
     (hf : Integrable (fun t : ℝ ↦ f (σ + t * I))) :
     VerticalIntegral f σ =
       I • (∫ t in Iic a, f (σ + t * I)) + VIntegral f σ a b +
@@ -109,16 +72,7 @@ lemma verticalIntegral_split_three (a b : ℝ)
   rw [← integral_Iic_sub_Iic hf.restrict hf.restrict, add_sub_cancel,
     integral_Iic_eq_integral_Iio, integral_Iio_add_Ici hf.restrict hf.restrict]
 
-@[blueprint
-  (title := "DiffVertRect-eq-UpperLowerUs")
-  (statement := /--
-  The difference of two vertical integrals and a rectangle is
-  the difference of an upper and a lower U integrals.
-  -/)
-  (proof := /-- Follows directly from the definitions. -/)
-  (proofUses := ["UpperUIntegral", "LowerUIntegral"])
-  (latexEnv := "lemma")]
-lemma DiffVertRect_eq_UpperLowerUs {σ σ' T : ℝ}
+theorem DiffVertRect_eq_UpperLowerUs {σ σ' T : ℝ}
     (f_int_σ : Integrable (fun (t : ℝ) ↦ f (σ + t * I)))
     (f_int_σ' : Integrable (fun (t : ℝ) ↦ f (σ' + t * I))) :
     VerticalIntegral f σ' - VerticalIntegral f σ -
@@ -135,19 +89,6 @@ lemma DiffVertRect_eq_UpperLowerUs {σ σ' T : ℝ}
 abbrev HolomorphicOn (f : ℂ → E) (s : Set ℂ) : Prop :=
     DifferentiableOn ℂ f s
 
-@[blueprint
-  (title := "existsDifferentiableOn-of-bddAbove")
-  (statement := /--
-  If $f$ is differentiable on a set $s$ except at $c\in s$,
-  and $f$ is bounded above on $s\setminus\{c\}$, then there
-  exists a differentiable function $g$ on $s$ such that $f$
-  and $g$ agree on $s\setminus\{c\}$.
-  -/)
-  (proof := /--
-  This is the Riemann Removable Singularity Theorem, slightly
-  rephrased from what's in Mathlib. (We don't care what the
-  function $g$ is, just that it's holomorphic.)
-  -/)]
 theorem existsDifferentiableOn_of_bddAbove [CompleteSpace E]
     {s : Set ℂ} {c : ℂ} (hc : s ∈ nhds c)
     (hd : HolomorphicOn f (s \ {c}))
@@ -159,14 +100,6 @@ theorem existsDifferentiableOn_of_bddAbove [CompleteSpace E]
     fun z hz ↦ if h : z = c then (hz.2 h).elim
       else by simp [h]⟩
 
-@[blueprint
-  (title := "HolomorphicOn.vanishesOnRectangle")
-  (statement := /--
-  If $f$ is holomorphic on a rectangle $z$ and $w$, then the
-  integral of $f$ over the rectangle with corners $z$ and $w$
-  is $0$.
-  -/)
-  (proof := /-- This is in a Mathlib PR. -/)]
 theorem HolomorphicOn.vanishesOnRectangle [CompleteSpace E]
     {U : Set ℂ} (f_holo : HolomorphicOn f U)
     (hU : Rectangle z w ⊆ U) :
@@ -253,7 +186,7 @@ theorem HolomorphicOn.rectangleBorderIntegrable (hf : HolomorphicOn f (Rectangle
 `RectangleIntegral f (x₀ + y₀ * I) (x₁ + y₁ * I)` is the sum of
 `RectangleIntegral f (x₀ + y₀ * I) (a + y₁ * I)` and
 `RectangleIntegral f (a + y₀ * I) (x₁ + y₁ * I)`. -/
-lemma RectangleIntegralHSplit {a x₀ x₁ y₀ y₁ : ℝ}
+theorem RectangleIntegralHSplit {a x₀ x₁ y₀ y₁ : ℝ}
     (f_int_x₀_a_bot : IntervalIntegrable (fun x => f (↑x + ↑y₀ * I)) volume x₀ a)
     (f_int_a_x₁_bot : IntervalIntegrable (fun x => f (↑x + ↑y₀ * I)) volume a x₁)
     (f_int_x₀_a_top : IntervalIntegrable (fun x => f (↑x + ↑y₁ * I)) volume x₀ a)
@@ -292,7 +225,7 @@ lemma RectangleIntegralHSplit {a x₀ x₁ y₀ y₁ : ℝ}
   rw [hcomm₁, hcomm₂]
   abel
 
-lemma RectangleIntegralHSplit' {a x₀ x₁ y₀ y₁ : ℝ}
+theorem RectangleIntegralHSplit' {a x₀ x₁ y₀ y₁ : ℝ}
     (ha : a ∈ [[x₀, x₁]])
     (hf : RectangleBorderIntegrable f (↑x₀ + ↑y₀ * I) (↑x₁ + ↑y₁ * I)) :
     RectangleIntegral f (x₀ + y₀ * I) (x₁ + y₁ * I) =
@@ -304,7 +237,7 @@ lemma RectangleIntegralHSplit' {a x₀ x₁ y₀ y₁ : ℝ}
     (IntervalIntegrable.mono (by simpa using hf.2.1) (uIcc_subset_uIcc left_mem_uIcc ha) le_rfl)
     (IntervalIntegrable.mono (by simpa using hf.2.1) (uIcc_subset_uIcc ha right_mem_uIcc) le_rfl)
 
-lemma RectangleIntegralVSplit {b x₀ x₁ y₀ y₁ : ℝ}
+theorem RectangleIntegralVSplit {b x₀ x₁ y₀ y₁ : ℝ}
     (f_int_y₀_b_left : IntervalIntegrable (fun y => f (x₀ + y * I)) volume y₀ b)
     (f_int_b_y₁_left : IntervalIntegrable (fun y => f (x₀ + y * I)) volume b y₁)
     (f_int_y₀_b_right : IntervalIntegrable (fun y => f (x₁ + y * I)) volume y₀ b)
@@ -320,7 +253,7 @@ lemma RectangleIntegralVSplit {b x₀ x₁ y₀ y₁ : ℝ}
   rw [← h₁, ← h₂]
   module
 
-lemma RectangleIntegralVSplit' {b x₀ x₁ y₀ y₁ : ℝ}
+theorem RectangleIntegralVSplit' {b x₀ x₁ y₀ y₁ : ℝ}
     (hb : b ∈ [[y₀, y₁]])
     (hf : RectangleBorderIntegrable f (↑x₀ + ↑y₀ * I) (↑x₁ + ↑y₁ * I)) :
     RectangleIntegral f (x₀ + y₀ * I) (x₁ + y₁ * I) =
@@ -333,7 +266,7 @@ lemma RectangleIntegralVSplit' {b x₀ x₁ y₀ y₁ : ℝ}
     (IntervalIntegrable.mono (by simpa using hf.2.2.1) (uIcc_subset_uIcc hb right_mem_uIcc) le_rfl)
 
 set_option linter.style.multiGoal false in
-lemma RectanglePullToNhdOfPole' [CompleteSpace E] {z₀ z₁ z₂ z₃ p : ℂ}
+theorem RectanglePullToNhdOfPole' [CompleteSpace E] {z₀ z₁ z₂ z₃ p : ℂ}
     (h_orientation : z₀.re ≤ z₃.re ∧ z₀.im ≤ z₃.im ∧
       z₁.re ≤ z₂.re ∧ z₁.im ≤ z₂.im)
     (hp : Rectangle z₁ z₂ ∈ 𝓝 p) (hz : Rectangle z₁ z₂ ⊆ Rectangle z₀ z₃)
@@ -395,33 +328,11 @@ lemma RectanglePullToNhdOfPole' [CompleteSpace E] {z₀ z₁ z₂ z₃ p : ℂ}
   simp only [re_add_im] at *
   additive_combination h₁ + h₂ + h₃ + h₄ + h₅ + h₆ + h₇ + h₈
 
-blueprint_comment /--
-The next lemma allows to zoom a big rectangle down to a small
-square, centered at a pole.
--/
 /-- Given `f` holomorphic on a rectangle `z` and `w` except at
 a point `p`, the integral of `f` over the rectangle with
 corners `z` and `w` is the same as the integral of `f` over a
 small square centered at `p`. -/
-@[blueprint
-  (title := "RectanglePullToNhdOfPole")
-  (statement := /--
-  If $f$ is holomorphic on a rectangle $z$ and $w$ except at
-  a point $p$, then the integral of $f$ over the rectangle
-  with corners $z$ and $w$ is the same as the integral of $f$
-  over a small square centered at $p$.
-  -/)
-  (proof := /--
-  Chop the big rectangle with two vertical cuts and two
-  horizontal cuts into smaller rectangles, the middle one
-  being the desired square. The integral over each of the
-  outer rectangles vanishes, since $f$ is holomorphic there.
-  (The constant $c$ being ``small enough'' here just means
-  that the inner square is strictly contained in the big
-  rectangle.)
-  -/)
-  (latexEnv := "lemma")]
-lemma RectanglePullToNhdOfPole [CompleteSpace E] {z w p : ℂ}
+theorem RectanglePullToNhdOfPole [CompleteSpace E] {z w p : ℂ}
     (zRe_lt_wRe : z.re ≤ w.re) (zIm_lt_wIm : z.im ≤ w.im)
     (hp : Rectangle z w ∈ 𝓝 p) (fHolo : HolomorphicOn f (Rectangle z w \ {p})) :
     ∀ᶠ (c : ℝ) in 𝓝[>]0,
@@ -432,7 +343,7 @@ lemma RectanglePullToNhdOfPole [CompleteSpace E] {z w p : ℂ}
   exact RectanglePullToNhdOfPole' (by simp_all [cpos.le])
     (square_mem_nhds p (ne_of_gt cpos)) hc fHolo
 
-lemma RectanglePullToNhdOfPole'' [CompleteSpace E] {z w p : ℂ}
+theorem RectanglePullToNhdOfPole'' [CompleteSpace E] {z w p : ℂ}
     (zRe_le_wRe : z.re ≤ w.re) (zIm_le_wIm : z.im ≤ w.im)
     (pInRectInterior : Rectangle z w ∈ 𝓝 p) (fHolo : HolomorphicOn f (Rectangle z w \ {p})) :
     ∀ᶠ (c : ℝ) in 𝓝[>]0,
@@ -483,18 +394,18 @@ theorem RectangleIntegral.translate' (f : ℂ → E) (z w p : ℂ) :
     RectangleIntegral' (fun s => f (s - p)) z w = RectangleIntegral' f (z - p) (w - p) := by
   simp_rw [RectangleIntegral', RectangleIntegral.translate]
 
-lemma Complex.inv_re_add_im : (x + y * I)⁻¹ = (x - I * y) / (x ^ 2 + y ^ 2) := by
+theorem Complex.inv_re_add_im : (x + y * I)⁻¹ = (x - I * y) / (x ^ 2 + y ^ 2) := by
   rw [Complex.inv_def, div_eq_mul_inv]
   congr <;> simp [conj_ofReal, normSq] <;> ring
 
-lemma sq_add_sq_ne_zero (hy : y ≠ 0) : x ^ 2 + y ^ 2 ≠ 0 := by
+theorem sq_add_sq_ne_zero (hy : y ≠ 0) : x ^ 2 + y ^ 2 ≠ 0 := by
   linarith [sq_nonneg x, sq_pos_iff.mpr hy]
 
-lemma continuous_self_div_sq_add_sq (hy : y ≠ 0) :
+theorem continuous_self_div_sq_add_sq (hy : y ≠ 0) :
     Continuous fun x => x / (x ^ 2 + y ^ 2) :=
   continuous_id.div (continuous_id.pow 2 |>.add continuous_const) (fun _ => sq_add_sq_ne_zero hy)
 
-lemma integral_self_div_sq_add_sq (hy : y ≠ 0) :
+theorem integral_self_div_sq_add_sq (hy : y ≠ 0) :
     ∫ x in x₁..x₂, x / (x ^ 2 + y ^ 2) =
     Real.log (x₂ ^ 2 + y ^ 2) / 2 - Real.log (x₁ ^ 2 + y ^ 2) / 2 := by
   let f (x : ℝ) : ℝ := Real.log (x ^ 2 + y ^ 2) / 2
@@ -507,7 +418,7 @@ lemma integral_self_div_sq_add_sq (hy : y ≠ 0) :
   simp_rw [← e2.deriv]
   exact integral_deriv_eq_sub (fun _ _ => e2.differentiableAt) (e4.intervalIntegrable _ _)
 
-lemma integral_const_div_sq_add_sq (hy : y ≠ 0) :
+theorem integral_const_div_sq_add_sq (hy : y ≠ 0) :
     ∫ x in x₁..x₂, y / (x ^ 2 + y ^ 2) = arctan (x₂ / y) - arctan (x₁ / y) := by
   nth_rewrite 1 [← div_mul_cancel₀ x₁ hy, ← div_mul_cancel₀ x₂ hy]
   simp_rw [← mul_integral_comp_mul_right, ← intervalIntegral.integral_const_mul,
@@ -517,7 +428,7 @@ lemma integral_const_div_sq_add_sq (hy : y ≠ 0) :
     ring
 
 set_option backward.isDefEq.respectTransparency false in
-lemma integral_const_div_self_add_im (hy : y ≠ 0) :
+theorem integral_const_div_self_add_im (hy : y ≠ 0) :
     ∫ x : ℝ in x₁..x₂, A / (x + y * I) =
     A * (Real.log (x₂ ^ 2 + y ^ 2) / 2 - Real.log (x₁ ^ 2 + y ^ 2) / 2) -
     A * I * (arctan (x₂ / y) - arctan (x₁ / y)) := by
@@ -540,7 +451,7 @@ lemma integral_const_div_self_add_im (hy : y ≠ 0) :
   simp_rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_ofReal,
     integral_self_div_sq_add_sq hy, integral_const_div_sq_add_sq hy]
 
-lemma integral_const_div_re_add_self (hx : x ≠ 0) :
+theorem integral_const_div_re_add_self (hx : x ≠ 0) :
     ∫ y : ℝ in y₁..y₂, A / (x + y * I) =
     A / I * (Real.log (y₂ ^ 2 + (-x) ^ 2) / 2 - Real.log (y₁ ^ 2 + (-x) ^ 2) / 2) -
     A / I * I * (arctan (y₂ / -x) - arctan (y₁ / -x)) := by
@@ -558,7 +469,7 @@ lemma integral_const_div_re_add_self (hx : x ≠ 0) :
   have l2 : -x ≠ 0 := by rwa [neg_ne_zero]
   simp_rw [l1, integral_const_div_self_add_im l2]
 
-lemma ResidueTheoremAtOrigin' {z w c : ℂ}
+theorem ResidueTheoremAtOrigin' {z w c : ℂ}
     (h1 : z.re < 0) (h2 : z.im < 0) (h3 : 0 < w.re) (h4 : 0 < w.im) :
     RectangleIntegral (fun s => c / s) z w = 2 * I * π * c := by
   simp only [RectangleIntegral, HIntegral, VIntegral, smul_eq_mul]
@@ -592,42 +503,12 @@ theorem ResidueTheoremInRectangle
   rwa [ResidueTheoremAtOrigin']
   all_goals simp [*]
 
-@[blueprint
-  (title := "ResidueTheoremAtOrigin")
-  (statement := /--
-  The rectangle (square) integral of $f(s) = 1/s$ with
-  corners $-1-i$ and $1+i$ is equal to $2\pi i$.
-  -/)
-  (proof := /--
-  This is a special case of the more general result above. -/)
-  (latexEnv := "lemma")]
-lemma ResidueTheoremAtOrigin :
+theorem ResidueTheoremAtOrigin :
     RectangleIntegral' (fun s ↦ 1 / s) (-1 - I) (1 + I) = 1 := by
   rw [RectangleIntegral', ResidueTheoremAtOrigin']
   all_goals simp [field]
 
-@[blueprint
-  (title := "ResidueTheoremOnRectangleWithSimplePole")
-  (statement := /--
-  Suppose that $f$ is a holomorphic function on a rectangle,
-  except for a simple pole at $p$.
-  By the latter, we mean that there is a function $g$
-  holomorphic on the rectangle such that,
-  $f = g + A/(s-p)$ for some $A\in\C$. Then the integral of
-  $f$ over the rectangle is $A$.
-  -/)
-  (proof := /--
-  Replace $f$ with $g + A/(s-p)$ in the integral.
-  The integral of $g$ vanishes by
-  Lemma \ref{HolomorphicOn.vanishesOnRectangle}.
-  To evaluate the integral of $1/(s-p)$, pull everything to a
-  square about the origin using
-  Lemma \ref{RectanglePullToNhdOfPole}, and rescale by $c$;
-  what remains is handled by
-  Lemma \ref{ResidueTheoremAtOrigin}.
-  -/)
-  (latexEnv := "lemma")]
-lemma ResidueTheoremOnRectangleWithSimplePole {f g : ℂ → ℂ} {z w p A : ℂ}
+theorem ResidueTheoremOnRectangleWithSimplePole {f g : ℂ → ℂ} {z w p A : ℂ}
     (zRe_le_wRe : z.re ≤ w.re) (zIm_le_wIm : z.im ≤ w.im)
     (pInRectInterior : Rectangle z w ∈ 𝓝 p) (gHolo : HolomorphicOn g (Rectangle z w))
     (principalPart : Set.EqOn (f - fun s ↦ A / (s - p)) g (Rectangle z w \ {p})) :
@@ -658,7 +539,7 @@ lemma ResidueTheoremOnRectangleWithSimplePole {f g : ℂ → ℂ} {z w p A : ℂ
   rw [gHolo.vanishesOnRectangle (by rfl), smul_zero, zero_add]
   exact ResidueTheoremInRectangle zRe_le_wRe zIm_le_wIm pInRectInterior
 
-lemma IsBigO_to_BddAbove {f : ℂ → ℂ} {p : ℂ}
+theorem IsBigO_to_BddAbove {f : ℂ → ℂ} {p : ℂ}
     (f_near_p : f =O[𝓝[≠] p] (1 : ℂ → ℂ)) :
     ∃ U ∈ 𝓝 p, BddAbove (norm ∘ f '' (U \ {p})) := by
   simp only [isBigO_iff, Pi.one_apply, one_mem, CStarRing.norm_of_mem_unitary, mul_one] at f_near_p
@@ -741,7 +622,7 @@ higher-order residue support. -/
 def HasSimplePolesOn (f : ℂ → ℂ) (s : Set ℂ) : Prop :=
   ∀ z ∈ s, (-1 : ℤ) ≤ meromorphicOrderAt f z
 
-lemma HasSimplePolesOn.mono {f : ℂ → ℂ} {s t : Set ℂ}
+theorem HasSimplePolesOn.mono {f : ℂ → ℂ} {s t : Set ℂ}
     (h : HasSimplePolesOn f t) (hst : s ⊆ t) : HasSimplePolesOn f s := by
   intro z hz
   exact h z (hst hz)
@@ -766,13 +647,13 @@ infinitely many poles, summability must be assumed for the value to be meaningfu
 noncomputable def sumResiduesIn (f : ℂ → ℂ) (S : Set ℂ) : ℂ :=
   ∑' z : S, residue f z
 
-lemma residue_eq_of_tendsto {f : ℂ → ℂ} {p c : ℂ}
+theorem residue_eq_of_tendsto {f : ℂ → ℂ} {p c : ℂ}
     (h : Filter.Tendsto (fun z ↦ (z - p) * f z) (nhdsWithin p {p}ᶜ) (nhds c)) :
     residue f p = c := by
   unfold residue
   exact h.limUnder_eq
 
-lemma residue_analyticAt_eq_zero {f : ℂ → ℂ} {p : ℂ} (hf : AnalyticAt ℂ f p) :
+theorem residue_analyticAt_eq_zero {f : ℂ → ℂ} {p : ℂ} (hf : AnalyticAt ℂ f p) :
     residue f p = 0 := by
   apply residue_eq_of_tendsto
   have hsub : Filter.Tendsto (fun z : ℂ ↦ z - p) (nhdsWithin p {p}ᶜ) (nhds 0) := by
@@ -783,7 +664,7 @@ lemma residue_analyticAt_eq_zero {f : ℂ → ℂ} {p : ℂ} (hf : AnalyticAt �
     hf.continuousAt.continuousWithinAt.tendsto
   simpa using hsub.mul hf'
 
-lemma simplePole_sub_residue_isBigO_one {f : ℂ → ℂ} {p : ℂ}
+theorem simplePole_sub_residue_isBigO_one {f : ℂ → ℂ} {p : ℂ}
     (hf : MeromorphicAt f p) (hord : meromorphicOrderAt f p = (-1 : ℤ)) :
     (f - (fun z ↦ residue f p / (z - p))) =O[nhdsWithin p {p}ᶜ] (1 : ℂ → ℂ) := by
   obtain ⟨g, hg_analytic, hg_ne, hg_eq⟩ := (meromorphicOrderAt_eq_int_iff hf).1 hord
@@ -881,7 +762,7 @@ private lemma horizontalPath_not_eventuallyConst (h : ℝ) (x : ℝ) :
   exact one_ne_zero (hpath.unique hconst)
 
 -- Non-constancy of vertical paths `y ↦ r + y * I`.
-lemma verticalPath_not_eventuallyConst (r : ℝ) (x : ℝ) :
+theorem verticalPath_not_eventuallyConst (r : ℝ) (x : ℝ) :
     ¬Filter.EventuallyConst (fun y : ℝ ↦ (r : ℂ) + (y : ℂ) * Complex.I) (nhds x) := by
   intro hc
   obtain ⟨c, hc⟩ := Filter.eventuallyConst_iff_exists_eventuallyEq.1 hc
@@ -1188,7 +1069,7 @@ private lemma toMeromorphicNFOn_add_integral {f : ℂ → ℂ} {z w : ℂ}
       (principalPart_borderIntegrable f_no_poles_boundary f_poles_finite), smul_add]
 
 /-- The Residue Theorem on a rectangle for functions with simple poles. -/
-lemma RectangleIntegral'_eq_sumResiduesIn {f : ℂ → ℂ} {z w : ℂ}
+theorem RectangleIntegral'_eq_sumResiduesIn {f : ℂ → ℂ} {z w : ℂ}
     (zRe_le_wRe : z.re ≤ w.re) (zIm_le_wIm : z.im ≤ w.im)
     (f_mero : MeromorphicOn f (Rectangle z w))
     (f_no_poles_boundary : Disjoint (RectangleBorder z w) {z | meromorphicOrderAt f z < 0})
@@ -1233,7 +1114,7 @@ lemma RectangleIntegral'_eq_sumResiduesIn {f : ℂ → ℂ} {z w : ℂ}
     _ = sumResiduesIn fNF poles := by simp
     _ = sumResiduesIn f poles := h_residue_congr.symm
 
-lemma residue_eq_zero_of_not_pole_of_meromorphicAt {F : ℂ → ℂ} {s : ℂ}
+theorem residue_eq_zero_of_not_pole_of_meromorphicAt {F : ℂ → ℂ} {s : ℂ}
     (hs_mero : MeromorphicAt F s) (hs_not_pole : 0 ≤ meromorphicOrderAt F s) :
     residue F s = 0 := by
   apply residue_eq_of_tendsto
@@ -1244,7 +1125,7 @@ lemma residue_eq_zero_of_not_pole_of_meromorphicAt {F : ℂ → ℂ} {s : ℂ}
         Filter.Tendsto (fun z : ℂ ↦ z - s) (nhdsWithin s {s}ᶜ) (nhds (s - s)))
   simpa using hsub.mul hc
 
-lemma sumResiduesIn_inter_eq_of_set_eq {F : ℂ → ℂ} {Rn S2 P : Set ℂ}
+theorem sumResiduesIn_inter_eq_of_set_eq {F : ℂ → ℂ} {Rn S2 P : Set ℂ}
     (h_set_eq : Rn ∩ P = S2 ∩ P)
     (h_residue_zero : ∀ s ∈ S2, s ∉ P → residue F s = 0) :
     sumResiduesIn F (Rn ∩ P) = sumResiduesIn F S2 := by

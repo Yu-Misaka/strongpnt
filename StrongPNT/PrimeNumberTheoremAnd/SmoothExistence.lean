@@ -1,9 +1,6 @@
-import Architect
-import Batteries.Tactic.Lemma
 import Mathlib.Geometry.Manifold.PartitionOfUnity
 import Mathlib.Tactic.Bound
 
-set_option lang.lemmaCmd true
 
 open MeasureTheory Set Real
 open scoped ContDiff
@@ -16,7 +13,7 @@ theorem support_id' {α : Type*} [Zero α] : support (fun x : α ↦ x) = {0}ᶜ
   support_id
 end Function
 
-lemma smooth_urysohn_support_Ioo {a b c d : ℝ} (h1 : a < b) (h3 : c < d) :
+theorem smooth_urysohn_support_Ioo {a b c d : ℝ} (h1 : a < b) (h3 : c < d) :
     ∃ Ψ : ℝ → ℝ, (ContDiff ℝ ∞ Ψ) ∧ (HasCompactSupport Ψ) ∧
     Set.indicator (Set.Icc b c) 1 ≤ Ψ ∧ Ψ ≤ Set.indicator (Set.Ioo a d) 1 ∧
     (Function.support Ψ = Set.Ioo a d) := by
@@ -50,7 +47,7 @@ lemma smooth_urysohn_support_Ioo {a b c d : ℝ} (h1 : a < b) (h3 : c < d) :
   · ext x
     simp only [Function.mem_support, ne_eq, mem_Ioo, ← hΨ0, not_or, not_le]
 
-lemma SmoothExistence :
+theorem SmoothExistence :
     ∃ (ν : ℝ → ℝ), (ContDiff ℝ ∞ ν) ∧ (∀ x, 0 ≤ ν x) ∧
     ν.support ⊆ Icc (1 / 2) 2 ∧ ∫ x in Ici 0, ν x / x = 1 := by
   suffices h : ∃ (ν : ℝ → ℝ), (ContDiff ℝ ∞ ν) ∧ (∀ x, 0 ≤ ν x) ∧

@@ -1,4 +1,3 @@
-import Architect
 import Mathlib.Analysis.Calculus.Deriv.Star
 import Mathlib.Analysis.Normed.Module.Connected
 import Mathlib.NumberTheory.Harmonic.ZetaAsymp
@@ -6,38 +5,13 @@ import Mathlib.NumberTheory.Harmonic.ZetaAsymp
 open scoped Complex ComplexConjugate
 
 
-blueprint_comment /--
-Now in Mathlib:
--/
-@[blueprint
-  (title := "deriv-conj-conj")
-  (statement := /--
-    Let $f : \mathbb{C} \to \mathbb{C}$ be a function at $p \in \mathbb{C}$ with derivative $a$.
-    Then the derivative of the function $g(z) = \overline{f(\overline{z})}$ at $\overline{p}$ is
-    $\overline{a}$.
-  -/)
-  (proof := /--
-    We proceed by case analysis on whether $f$ is differentiable at $p$. If $f$ is differentiable
-    at $p$, then we can apply the previous theorem. If $f$ is not differentiable at $p$, then
-    neither is $g$, and both derivatives have the default value of zero.
-  -/)]
 theorem deriv_conj_conj' (f : ℂ → ℂ) (p : ℂ) :
     deriv (fun z ↦ conj (f (conj z))) (conj p) = conj (deriv f p) := by
   trans deriv (conj ∘ f ∘ conj) (conj p)
   · rfl
   simp
 
-@[blueprint
-  (title := "conj-riemannZeta-conj-aux1")
-  (statement := /--
-    Conjugation symmetry of the Riemann zeta function in the half-plane of convergence. Let
-    $s \in \mathbb{C}$ with $\Re(s) > 1$. Then $\overline{\zeta(\overline{s})} = \zeta(s)$.
-  -/)
-  (proof := /--
-    We expand the definition of the Riemann zeta function as a series and find that the two sides
-    are equal term by term.
-  -/)]
-lemma conj_riemannZeta_conj_aux1 (s : ℂ) (hs : 1 < s.re) :
+theorem conj_riemannZeta_conj_aux1 (s : ℂ) (hs : 1 < s.re) :
     conj (riemannZeta (conj s)) = riemannZeta s := by
   rw [zeta_eq_tsum_one_div_nat_add_one_cpow hs]
   rw [zeta_eq_tsum_one_div_nat_add_one_cpow (by simpa)]
@@ -52,20 +26,6 @@ lemma conj_riemannZeta_conj_aux1 (s : ℂ) (hs : 1 < s.re) :
   rw [show (↑n + 1 : ℂ) = ↑((n + 1 : ℕ) : ℕ) from by push_cast; ring,
     ← Complex.natCast_log, Complex.conj_ofReal]
 
-blueprint_comment /--
-% TODO: Submit this and the following corollaries to Mathlib.
--/
-@[blueprint
-  (title := "conj-riemannZeta-conj")
-  (statement := /--
-    Conjugation symmetry of the Riemann zeta function. Let $s \in \mathbb{C}$. Then
-    $$\overline{\zeta(\overline{s})} = \zeta(s).$$
-  -/)
-  (proof := /--
-    By the previous lemma, the two sides are equal on the half-plane
-    $\{s \in \mathbb{C} : \Re(s) > 1\}$. Then, by analytic continuation, they are equal on the
-    whole complex plane.
-  -/)]
 theorem conj_riemannZeta_conj (s : ℂ) : conj (riemannZeta (conj s)) = riemannZeta s := by
   by_cases hs1 : s = 1
   · subst hs1
@@ -103,28 +63,9 @@ theorem conj_riemannZeta_conj (s : ℂ) : conj (riemannZeta (conj s)) = riemannZ
       exact (differentiableAt_riemannZeta hs₁).differentiableWithinAt
     · exact (isConnected_compl_singleton_of_one_lt_rank (by simp) 1).isPreconnected
 
-@[blueprint
-  (title := "riemannZeta-conj")
-  (statement := /--
-    Conjugation symmetry of the Riemann zeta function. Let $s \in \mathbb{C}$. Then
-    $$\zeta(\overline{s}) = \overline{\zeta(s)}.$$
-  -/)
-  (proof := /--
-    This follows as an immediate corollary of Theorem \ref{conj_riemannZeta_conj}.
-  -/)]
 theorem riemannZeta_conj (s : ℂ) : riemannZeta (conj s) = conj (riemannZeta s) := by
   rw [← conj_riemannZeta_conj, Complex.conj_conj]
 
-@[blueprint
-  (title := "deriv-riemannZeta-conj")
-  (statement := /--
-    Conjugation symmetry of the derivative of the Riemann zeta function. Let $s \in \mathbb{C}$.
-    Then $$\zeta'(\overline{s}) = \overline{\zeta'(s)}.$$
-  -/)
-  (proof := /--
-    We apply the derivative conjugation symmetry to the Riemann zeta function and use the
-    conjugation symmetry of the Riemann zeta function itself.
-  -/)]
 theorem deriv_riemannZeta_conj (s : ℂ) :
     deriv riemannZeta (conj s) = conj (deriv riemannZeta s) := by
   simp [← deriv_conj_conj', conj_riemannZeta_conj]
@@ -136,21 +77,7 @@ theorem logDerivZeta_conj (s : ℂ) :
 theorem logDerivZeta_conj' (s : ℂ) :
     (logDeriv riemannZeta) (conj s) = conj (logDeriv riemannZeta s) := logDerivZeta_conj s
 
-blueprint_comment /--
-% TODO: Submit this to Mathlib.
--/
 set_option backward.isDefEq.respectTransparency false in
-@[blueprint
-  (title := "intervalIntegral-conj")
-  (statement := /--
-    The conjugation symmetry of the interval integral. Let $f : \mathbb{R} \to \mathbb{C}$ be a
-    measurable function, and let $a, b \in \mathbb{R}$. Then
-    $$\int_{a}^{b} \overline{f(x)} \, dx = \overline{\int_{a}^{b} f(x) \, dx}.$$
-  -/)
-  (proof := /--
-    We unfold the interval integral into an integral over a uIoc and use the conjugation property
-    of integrals.
-  -/)]
 theorem intervalIntegral_conj {f : ℝ → ℂ} {a b : ℝ} :
     ∫ (x : ℝ) in a..b, conj (f x) = conj (∫ (x : ℝ) in a..b, f x) := by
   rw [intervalIntegral.intervalIntegral_eq_integral_uIoc, integral_conj, ← RCLike.conj_smul,
